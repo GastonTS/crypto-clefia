@@ -80,5 +80,44 @@ object Clefia {
     0x02, 0x0a, 0x01, 0x08,
     0x0a, 0x02, 0x08, 0x01)
 
- 
+  def splitInto4(s: String) = s.grouped(4).toList
+
+  def mult(mv: Int, v: Int) = {
+    def rMult(acc: Int, v1: Int, v2: Int): Int =
+      if (v2 == 0) acc & 255
+      else {
+        val nAcc = if ( (v2 & 1) !=0 ) acc ^ v1 else acc
+        val nv1 = v1 << 1
+        if ((nv1 & 256)!=0)
+          rMult(nAcc, nv1 ^ 0x1d, v2 >> 1)
+        else
+          rMult(nAcc, nv1, v2 >> 1)
+      }
+
+    rMult(0, mv, v)
+  }
+
+  def squareMatrixXVector(matrix: Array[Int], vector: Array[Int]) = {
+    val n = vector.length
+    0 until n map { i =>
+      (0 until n).map(j => mult(matrix(i*n + j), vector(j))).reduce(_^_)
+    }
+  }
+
+  def getTValues(key: String, block: String) = {
+    splitInto4(key).zip(splitInto4(block)).map {
+      case (kPart, bPart) => Integer.parseInt(kPart, 2) ^ Integer.parseInt(bPart, 2)
+    }
+  }
+
+  def f0(key: String, block: String): String = {
+    val tValues = getTValues(key, block)
+    squareMatrixXVector(M0, Array(S0(tValues(0)), S1(tValues(1)), S0(tValues(2)), S1(tValues(3)))).map(_.toBinaryString).reduce(_+_)
+  }
+
+  def f1(key: String, block: String): String = {
+    val tValues = getTValues(key, block)
+    squareMatrixXVector(M1, Array(S1(tValues(0)), S0(tValues(1)), S1(tValues(2)), S0(tValues(3)))).map(_.toBinaryString).reduce(_+_)
+  }
+
 }
