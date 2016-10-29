@@ -120,4 +120,8 @@ object Clefia {
     squareMatrixXVector(M1, Array(S1(tValues(0)), S0(tValues(1)), S1(tValues(2)), S0(tValues(3)))).map(_.toBinaryString).reduce(_+_)
   }
 
+  def doubleSwap(x: String): String = {
+    x.substring(7, 64) + x.substring(121, 128) + x.substring(0, 7) + x.substring(64, 121)
+  }
+
 }
