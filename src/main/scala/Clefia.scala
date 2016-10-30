@@ -122,6 +122,49 @@ object Clefia {
     concatBytes(squareMatrixXVector(M1, Array(S1(tValues(0)), S0(tValues(1)), S1(tValues(2)), S0(tValues(3)))))
   }
 
+  def gfn(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = {
+    def shuffle(t: Array[Long], i: Int): Array[Long] =
+      if (i == rounds) t.last +: t.init
+      else {
+        val newT = t.zipWithIndex.map { case (v, index) =>
+          if(index % 2 == 0) v
+          else v ^ f0(roundKeys(2 * i + index / 2), t(index - 1))
+        }
+        shuffle(newT.tail :+ newT.head, i + 1)
+      }
+
+    shuffle(input, 0)
+  }
+  //TODO: Test this gfn are the same than the others
+  //def gfn4(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = gfn(input, roundKeys, rounds)
+  //def gfn8(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = gfn(input, roundkeys, rounds)
+
+  def gfn4(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = {
+    def shuffle(t0: Long, t1: Long, t2: Long, t3: Long, i: Int): Array[Long] =
+      if (i == rounds) Array(t3, t0, t1, t2)
+      else shuffle(t1 ^ f0(roundKeys(2 * i), t0), t2, t3 ^ f1(roundKeys(2 * i + 1), t2), t0, i + 1)
+
+    shuffle(input(0), input(1), input(2), input(3), 0)
+  }
+
+  def gfn8(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = {
+    def shuffle(t0: Long, t1: Long, t2: Long, t3: Long, t4: Long, t5: Long, t6: Long, t7: Long, i: Int): Array[Long] =
+      if (i == rounds) Array(t7, t0, t1, t2, t3, t4, t5, t6)
+      else shuffle(t1 ^ f0(roundKeys(4 * i), t0), t2, t3 ^ f1(roundKeys(2 * i + 1), t2), t4,
+                   t5 ^ f0(roundKeys(4 * i + 2), t4), t6, t7 ^ f1(roundKeys(4 * i + 3), t6), t0, i + 1)
+
+
+    shuffle(input(0), input(1), input(2), input(3), input(4), input(5), input(6), input(7), 0)
+  }
+
+  def gfn4Inverse(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = {
+    def shuffle(t0: Long, t1: Long, t2: Long, t3: Long, i: Int): Array[Long] =
+      if (i == rounds) Array(t1, t2, t3, t0)
+      else shuffle(t3 ^ f1(roundKeys(2 * (rounds - i) - 1), t2), t0, t1 ^ f0(roundKeys(2 * (rounds - i) - 2), t0), t2, i + 1)
+
+    shuffle(input(0), input(1), input(2), input(3), 0)
+  }
+
   def doubleSwap(x: String): String = {
     x.substring(7, 64) + x.substring(121, 128) + x.substring(0, 7) + x.substring(64, 121)
   }
