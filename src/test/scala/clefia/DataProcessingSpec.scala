@@ -1,3 +1,5 @@
+package clefia
+
 import org.scalatest.{FreeSpec, Matchers}
 
 /**

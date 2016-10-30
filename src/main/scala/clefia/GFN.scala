@@ -1,3 +1,7 @@
+package clefia
+
+import clefia.ClefiaTypes.{Numeric128, Numeric256}
+
 /**
   * Created by gastonsantoalla on 30/10/16.
   */
@@ -122,8 +126,8 @@ object GFN {
   }
 
   //Harcoded GFNs exactly as the refference text
-  def gfn4H(input: (Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long) = {
-    def shuffle(t: (Long, Long, Long, Long), i: Int): (Long, Long, Long, Long) = {
+  def gfn4H(input: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = {
+    def shuffle(t: Numeric128, i: Int): Numeric128 = {
       val (t0, t1, t2, t3) = t
 
       if (i == rounds) (t3, t0, t1, t2)
@@ -133,8 +137,8 @@ object GFN {
     shuffle(input, 0)
   }
 
-  def gfn8H(input: (Long, Long, Long, Long, Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long, Long, Long, Long, Long) = {
-    def shuffle(t: (Long, Long, Long, Long, Long, Long, Long, Long), i: Int): (Long, Long, Long, Long, Long, Long, Long, Long) = {
+  def gfn8H(input: Numeric256, roundKeys:Array[Long], rounds: Int): Numeric256 = {
+    def shuffle(t: Numeric256, i: Int): Numeric256 = {
       val (t0, t1, t2, t3, t4, t5, t6, t7) = t
 
       if (i == rounds) (t7, t0, t1, t2, t3, t4, t5, t6)
@@ -162,17 +166,17 @@ object GFN {
 
     shuffle(input, 0)
   }
-  def gfn4(input: (Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long) = {
+  def gfn4(input: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = {
     val res = gfn(Array(input._1, input._2, input._3, input._4), roundKeys, rounds)
     (res(0), res(1), res(2), res(3))
   }
-  def gfn8(input: (Long, Long, Long, Long, Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long, Long, Long, Long, Long) = {
+  def gfn8(input: Numeric256, roundKeys:Array[Long], rounds: Int): Numeric256 = {
     val res = gfn(Array(input._1, input._2, input._3, input._4, input._5, input._6, input._7, input._8), roundKeys, rounds)
     (res(0), res(1), res(2), res(3), res(4), res(5), res(6), res(7))
   }
 
-  def gfn4Inverse(input: (Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long) = {
-    def shuffle(t: (Long, Long, Long, Long), i: Int): (Long, Long, Long, Long) = {
+  def gfn4Inverse(input: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = {
+    def shuffle(t: Numeric128, i: Int): Numeric128 = {
       val (t0, t1, t2, t3) = t
 
       if (i == rounds) (t1, t2, t3, t0)

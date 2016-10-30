@@ -1,9 +1,13 @@
+package clefia
+
+import clefia.ClefiaTypes.Numeric128
+
 /**
   * Created by gastonsantoalla on 30/10/16.
   */
 object DataProcessing {
 
-  def enc(plainText: (Long, Long, Long, Long), whiteningKeys: (Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long) = {
+  def enc(plainText: Numeric128, whiteningKeys: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = {
     val (p0, p1, p2, p3) = plainText
     val (wk0, wk1, wk2, wk3) = whiteningKeys
 
@@ -11,7 +15,7 @@ object DataProcessing {
     (t0, t1 ^ wk2, t2, t3 ^ wk3)
   }
 
-  def dec(cipherText: (Long, Long, Long, Long), whiteningKeys: (Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long) = {
+  def dec(cipherText: Numeric128, whiteningKeys: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = {
     val (c0, c1, c2, c3) = cipherText
     val (wk0, wk1, wk2, wk3) = whiteningKeys
 
