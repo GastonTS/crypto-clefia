@@ -1,6 +1,6 @@
 package clefia
 
-import clefia.ClefiaTypes.{Numeric128, Numeric192, Numeric256}
+import clefia.Numeric._
 
 /**
   * Created by gastonsantoalla on 30/10/16.
@@ -69,12 +69,16 @@ object KeyScheduling {
                     0xde372c53L, 0xb216d669L, 0x830a9629L, 0xef2beb34L,
                     0x798c6324L, 0x15ad6dceL, 0x04cf99a2L, 0x68ee2ebL)
 
-  def doubleSwap(x: String): String = {
-    x.substring(7, 64) + x.substring(121, 128) + x.substring(0, 7) + x.substring(64, 121)
+  def doubleSwap(x: Numeric128): Numeric128 = {
+    val (n0, n1, n2, n3) = x
+    (((n0 << 7) & 0xffffff80L) | (n1 >>> 25), //n0.last25 - n1.firstseven
+    ((n1 << 7) & 0xffffff80L) | (n3 & 0x7f),  //n1.last25 - n3.last7
+    (n0 & 0xfe000000L) | (n2 >>> 7),          //n0.first7 - n2.first25
+    ((n2 << 25) & 0xfe000000L) | (n3 >>> 7))  //n2.last7  - n3.first25
   }
 
   def from128Key(baseKey: Numeric128): (Numeric128, Array[Long]) = ???
   def from192Key(baseKey: Numeric192): (Numeric128, Array[Long]) = ???
   def from256Key(baseKey: Numeric256): (Numeric128, Array[Long]) = ???
-  
+
 }
