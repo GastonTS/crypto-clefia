@@ -7,14 +7,19 @@ class ClefiaSpec extends FreeSpec with Matchers {
 
   "Clefia object" -{
 
-    "should split into 4" - {
+    "should handle bytes" - {
 
-      "a 4 char string" in {
-        Clefia.splitInto4("1234") should be (List("1", "2", "3", "4"))
+      "getting bytes" in {
+        Clefia.getBytes(37162340L) should be (Array(2,55,13,100))
       }
 
-      "a 32 char string" in {
-        Clefia.splitInto4("abcdefghijklmnñopqrstuvwxyz12345") should be (List("abcdefgh", "ijklmnño", "pqrstuvw", "xyz12345"))
+      "concatenating bytes" in {
+        Clefia.concatBytes(Array(1, 69, 51, 56)) should be (21312312L)
+      }
+
+      "concat should be inverse of get" in {
+        Clefia.getBytes(Clefia.concatBytes(Array(11, 52, 255, 200))) should be (Array(11, 52, 255, 200))
+        Clefia.concatBytes(Clefia.getBytes(393829L)) should be (393829L)
       }
 
     }
@@ -37,21 +42,21 @@ class ClefiaSpec extends FreeSpec with Matchers {
       }
     }
 
-    "should get TValues" - {
-      "from 10110010110110101011010011100111 and 11100101100100111111101010010100" in {
-        Clefia.getTValues("10110010110110101011010011100111", "11100101100100111111101010010100") should be (Array(87, 73, 78, 115))
+      "should get TValues" - {
+      "from 3000677607 and 3851680404" in {
+        Clefia.getTValues(3000677607L, 3851680404L) should be (Array(87, 73, 78, 115))
       }
     }
 
     "should apply f0 correctly" - {
-      "from 10110010110110101011010011100111 and 11100101100100111111101010010100" in {
-        Clefia.f0("10110010110110101011010011100111", "11100101100100111111101010010100") should be (24698974)
+      "from 3000677607 and 3851680404" in {
+        Clefia.f0(3000677607L, 3851680404L) should be (24698974L)
       }
     }
 
     "should apply f1 correctly" - {
-      "from 10110010110110101011010011100111 and 11100101100100111111101010010100" in {
-        Clefia.f1("10110010110110101011010011100111", "11100101100100111111101010010100") should be (4096204530L)
+      "from 3000677607 and 3851680404" in {
+        Clefia.f1(3000677607L, 3851680404L) should be (4096204530L)
       }
     }
 
