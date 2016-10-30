@@ -122,18 +122,24 @@ object GFN {
   }
 
   //Harcoded GFNs exactly as the refference text
-  def gfn4H(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = {
-    def shuffle(t: Array[Long], i: Int): Array[Long] =
-      if (i == rounds) Array(t(3), t(0), t(1), t(2))
-      else shuffle(Array(t(1) ^ f0(roundKeys(2 * i), t(0)), t(2), t(3) ^ f1(roundKeys(2 * i + 1), t(2)), t(0)), i + 1)
+  def gfn4H(input: (Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long) = {
+    def shuffle(t: (Long, Long, Long, Long), i: Int): (Long, Long, Long, Long) = {
+      val (t0, t1, t2, t3) = t
+
+      if (i == rounds) (t3, t0, t1, t2)
+      else shuffle((t1 ^ f0(roundKeys(2 * i), t0), t2, t3 ^ f1(roundKeys(2 * i + 1), t2), t0), i + 1)
+    }
 
     shuffle(input, 0)
   }
 
-  def gfn8H(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = {
-    def shuffle(t: Array[Long], i: Int): Array[Long] =
-      if (i == rounds) Array(t(7), t(0), t(1), t(2), t(3), t(4), t(5), t(6))
-      else shuffle(Array(t(1) ^ f0(roundKeys(4 * i), t(0)), t(2), t(3) ^ f1(roundKeys(4 * i + 1), t(2)), t(4), t(5) ^ f0(roundKeys(4 * i + 2), t(4)), t(6), t(7) ^ f1(roundKeys(4 * i + 3), t(6)), t(0)), i + 1)
+  def gfn8H(input: (Long, Long, Long, Long, Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long, Long, Long, Long, Long) = {
+    def shuffle(t: (Long, Long, Long, Long, Long, Long, Long, Long), i: Int): (Long, Long, Long, Long, Long, Long, Long, Long) = {
+      val (t0, t1, t2, t3, t4, t5, t6, t7) = t
+
+      if (i == rounds) (t7, t0, t1, t2, t3, t4, t5, t6)
+      else shuffle((t1 ^ f0(roundKeys(4 * i), t0), t2, t3 ^ f1(roundKeys(4 * i + 1), t2), t4, t5 ^ f0(roundKeys(4 * i + 2), t4), t6, t7 ^ f1(roundKeys(4 * i + 3), t6), t0), i + 1)
+    }
 
     shuffle(input, 0)
   }
@@ -156,15 +162,23 @@ object GFN {
 
     shuffle(input, 0)
   }
-  def gfn4(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = gfn(input, roundKeys, rounds)
-  def gfn8(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = gfn(input, roundKeys, rounds)
-
-  def gfn4Inverse(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = {
-    def shuffle(t0: Long, t1: Long, t2: Long, t3: Long, i: Int): Array[Long] =
-      if (i == rounds) Array(t1, t2, t3, t0)
-      else shuffle(t3 ^ f1(roundKeys(2 * (rounds - i) - 1), t2), t0, t1 ^ f0(roundKeys(2 * (rounds - i) - 2), t0), t2, i + 1)
-
-    shuffle(input(0), input(1), input(2), input(3), 0)
+  def gfn4(input: (Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long) = {
+    val res = gfn(Array(input._1, input._2, input._3, input._4), roundKeys, rounds)
+    (res(0), res(1), res(2), res(3))
+  }
+  def gfn8(input: (Long, Long, Long, Long, Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long, Long, Long, Long, Long) = {
+    val res = gfn(Array(input._1, input._2, input._3, input._4, input._5, input._6, input._7, input._8), roundKeys, rounds)
+    (res(0), res(1), res(2), res(3), res(4), res(5), res(6), res(7))
   }
 
+  def gfn4Inverse(input: (Long, Long, Long, Long), roundKeys:Array[Long], rounds: Int): (Long, Long, Long, Long) = {
+    def shuffle(t: (Long, Long, Long, Long), i: Int): (Long, Long, Long, Long) = {
+      val (t0, t1, t2, t3) = t
+
+      if (i == rounds) (t1, t2, t3, t0)
+      else shuffle((t3 ^ f1(roundKeys(2 * (rounds - i) - 1), t2), t0, t1 ^ f0(roundKeys(2 * (rounds - i) - 2), t0), t2), i + 1)
+    }
+
+    shuffle(input, 0)
+  }
 }
