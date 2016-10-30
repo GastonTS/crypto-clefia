@@ -77,7 +77,19 @@ object KeyScheduling {
     ((n2 << 25) & 0xfe000000L) | (n3 >>> 7))  //n2.last7  - n3.first25
   }
 
-  def from128Key(baseKey: Numeric128): (Numeric128, Array[Long]) = ???
+  def from128Key(baseKey: Numeric128): (Numeric128, Array[Long]) = {
+    def loop(l: Numeric128, i: Int, acc: Array[Long]): Array[Long] =
+      if (i == 9) acc
+      else {
+        val t = l ^ (CON128(24 + 4 * i), CON128(24 + 4 * i + 1), CON128(24 + 4 * i  + 2), CON128(24 + 4 * i  + 3))
+        val rks = if(i % 2 == 0) t else t ^ baseKey
+
+        loop(doubleSwap(l), i + 1, acc ++ rks.toArray)
+      }
+
+    (baseKey, loop(GFN.gfn4(baseKey, CON128.slice(0, 24), 12), 0, Array()))
+  }
+
   def from192Key(baseKey: Numeric192): (Numeric128, Array[Long]) = ???
   def from256Key(baseKey: Numeric256): (Numeric128, Array[Long]) = ???
 
