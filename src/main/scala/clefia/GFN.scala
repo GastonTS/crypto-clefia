@@ -1,6 +1,6 @@
 package clefia
 
-import clefia.ClefiaTypes.{Numeric128, Numeric256}
+import clefia.Numeric._
 
 /**
   * Created by gastonsantoalla on 30/10/16.
@@ -83,46 +83,18 @@ object GFN {
     0x02, 0x0a, 0x01, 0x08,
     0x0a, 0x02, 0x08, 0x01)
 
-  def getBytes(bytes: Long): Array[Int] = Array(bytes >>> 24, bytes >>> 16, bytes >>> 8, bytes).map( b => (b & 0xff).toInt)
-
-  def concatBytes(byte1: Long, byte2: Long) = byte1 * 256 + byte2
-
-  def concatBytes(bytes: Seq[Int]): Long =  bytes.map(_.toLong).reduce(concatBytes)
-
-  def mult(mv: Int, v: Int) = {
-    def rMult(acc: Int, v1: Int, v2: Int): Int =
-      if (v2 == 0) acc & 255
-      else {
-        val nAcc = if ( (v2 & 1) !=0 ) acc ^ v1 else acc
-        val nv1 = v1 << 1
-        if ((nv1 & 256)!=0)
-          rMult(nAcc, nv1 ^ 0x1d, v2 >>> 1)
-        else
-          rMult(nAcc, nv1, v2 >>> 1)
-      }
-
-    rMult(0, mv, v)
-  }
-
-  def squareMatrixXVector(matrix: Array[Int], vector: Array[Int]) = {
-    val n = vector.length
-    0 until n map { i =>
-      (0 until n).map(j => mult(matrix(i*n + j), vector(j))).reduce(_^_)
-    }
-  }
-
-  def getTValues(key: Long, block: Long) = {
-    getBytes(key ^ block)
+  def getTValues(key: Long, block: Long): Numeric32 = {
+    (key ^ block).getBytes
   }
 
   def f0(key: Long, block: Long): Long = {
-    val tValues = getTValues(key, block)
-    concatBytes(squareMatrixXVector(M0, Array(S0(tValues(0)), S1(tValues(1)), S0(tValues(2)), S1(tValues(3)))))
+    val (t0, t1, t2, t3) = getTValues(key, block)
+    M0.squareMatrixXVector(Array(S0(t0), S1(t1), S0(t2), S1(t3))).concatBytes
   }
 
   def f1(key: Long, block: Long): Long = {
-    val tValues = getTValues(key, block)
-    concatBytes(squareMatrixXVector(M1, Array(S1(tValues(0)), S0(tValues(1)), S1(tValues(2)), S0(tValues(3)))))
+    val (t0, t1, t2, t3) = getTValues(key, block)
+    M1.squareMatrixXVector(Array(S1(t0), S0(t1), S1(t2), S0(t3))).concatBytes
   }
 
   //Harcoded GFNs exactly as the refference text
@@ -166,14 +138,8 @@ object GFN {
 
     shuffle(input, 0)
   }
-  def gfn4(input: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = {
-    val res = gfn(Array(input._1, input._2, input._3, input._4), roundKeys, rounds)
-    (res(0), res(1), res(2), res(3))
-  }
-  def gfn8(input: Numeric256, roundKeys:Array[Long], rounds: Int): Numeric256 = {
-    val res = gfn(Array(input._1, input._2, input._3, input._4, input._5, input._6, input._7, input._8), roundKeys, rounds)
-    (res(0), res(1), res(2), res(3), res(4), res(5), res(6), res(7))
-  }
+  def gfn4(input: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = gfn(input.toArray, roundKeys, rounds).toNumeric128
+  def gfn8(input: Numeric256, roundKeys:Array[Long], rounds: Int): Numeric256 = gfn(input.toArray, roundKeys, rounds).toNumeric256
 
   def gfn4Inverse(input: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = {
     def shuffle(t: Numeric128, i: Int): Numeric128 = {

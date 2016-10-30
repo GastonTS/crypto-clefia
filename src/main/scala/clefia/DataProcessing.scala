@@ -1,6 +1,6 @@
 package clefia
 
-import clefia.ClefiaTypes.Numeric128
+import clefia.Numeric.Numeric128
 
 /**
   * Created by gastonsantoalla on 30/10/16.
