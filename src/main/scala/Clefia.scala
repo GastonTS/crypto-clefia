@@ -80,7 +80,7 @@ object Clefia {
     0x02, 0x0a, 0x01, 0x08,
     0x0a, 0x02, 0x08, 0x01)
 
-  def splitInto4(s: String) = s.grouped(4).toList
+  def splitInto4(s: String) = s.grouped(s.length/4).toList
 
   def mult(mv: Int, v: Int) = {
     def rMult(acc: Int, v1: Int, v2: Int): Int =
@@ -110,14 +110,17 @@ object Clefia {
     }
   }
 
-  def f0(key: String, block: String): String = {
+  def getFinalYValue(yValues: IndexedSeq[Int]) =
+    java.lang.Long.parseLong(yValues.map( s => f"${s.toBinaryString}%8s").reduce(_+_).replace(" ", "0"), 2)
+
+  def f0(key: String, block: String): Long = {
     val tValues = getTValues(key, block)
-    squareMatrixXVector(M0, Array(S0(tValues(0)), S1(tValues(1)), S0(tValues(2)), S1(tValues(3)))).map(_.toBinaryString).reduce(_+_)
+    getFinalYValue(squareMatrixXVector(M0, Array(S0(tValues(0)), S1(tValues(1)), S0(tValues(2)), S1(tValues(3)))))
   }
 
-  def f1(key: String, block: String): String = {
+  def f1(key: String, block: String): Long = {
     val tValues = getTValues(key, block)
-    squareMatrixXVector(M1, Array(S1(tValues(0)), S0(tValues(1)), S1(tValues(2)), S0(tValues(3)))).map(_.toBinaryString).reduce(_+_)
+    getFinalYValue(squareMatrixXVector(M1, Array(S1(tValues(0)), S0(tValues(1)), S1(tValues(2)), S0(tValues(3)))))
   }
 
   def doubleSwap(x: String): String = {
