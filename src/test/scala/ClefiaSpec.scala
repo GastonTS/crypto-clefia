@@ -60,6 +60,46 @@ class ClefiaSpec extends FreeSpec with Matchers {
       }
     }
 
+    "should apply gfn correctly" - {
+
+      "using gfn4 with 6 rounds" in {
+        val input = Array(0x094082bcL, 0x6561a1beL, 0x3ca9e96eL, 0x5088488bL)
+        val keys = Array(0xf56b7aebL, 0x994a8a42L, 0x96a4bd75L, 0xfa854521L, 0x735b768aL, 0x1f7abac4L, 0xd5bc3b45L, 0xb99d5d62L, 0x52d73592L, 0x3ef636e5L, 0xc57a1ac9L, 0xa95b9b72L)
+
+        Clefia.gfn4H(input, keys, 6) should be (Array(1171750116L, 3609734244L, 3688607617L, 3692111635L))
+        Clefia.gfn4(input, keys, 6) should be (Array(1171750116L, 3609734244L, 3688607617L, 3692111635L))
+      }
+
+      "using gfn8 with 6 rounds" in {
+        val input = Array(0x417112deL, 0x2d5090f6L, 0xcca9096fL, 0xa088487bL, 0x8a4584b7L, 0xe664a43dL, 0xa933c25bL, 0xc512d21eL)
+        val keys = Array(0x524234b8L, 0x3e63a3e5L, 0x1128b26cL, 0x7d09c9a6L,
+          0x309df106L, 0x5cbc7c87L, 0xf45f7883L, 0x987ebe43L,
+          0x963ebc41L, 0xfa1fdf21L, 0x73167610L, 0x1f37f7c4L,
+          0x01829338L, 0x6da363b6L, 0x38c8e1acL, 0x54e9298fL,
+          0x246dd8e6L, 0x484c8c93L, 0xfe276c73L, 0x9206c649L,
+          0x9302b639L, 0xff23e324L, 0x7188732cL, 0x1da969c6L)
+
+        Clefia.gfn8H(input, keys, 6) should be (Array(4006647101L, 3894415849L, 2675728801L, 1500553729L, 516395372L, 1502064311L, 1307738312L, 3183946091L))
+        Clefia.gfn8(input, keys, 6) should be (Array(4006647101L, 3894415849L, 2675728801L, 1500553729L, 516395372L, 1502064311L, 1307738312L, 3183946091L))
+      }
+
+      "using gfn4Inverse with 6 rounds" in {
+        val input = Array(0xee0e4c21L, 0x822fef59L, 0x4f0e0e20L, 0x232feff8L)
+        val keys = Array(0x23eed7e0L, 0x4fcf0f94L, 0x29fec3c0L, 0x45df1f9eL, 0x2cf6c9d0L, 0x40d7179bL, 0x2e72ccd8L, 0x42539399L, 0x2f30ce5cL, 0x4311d198L, 0x2f91cf1eL, 0x43b07098L)
+
+        Clefia.gfn4Inverse(input, keys, 6) should be (Array(1585078746L, 1407736314L, 3451340836L, 3397394014L))
+      }
+
+      "assuring gfn4 and gfn4Inverse are inverse functions" in {
+        val input = Array(0xee0e4c21L, 0x822fef59L, 0x4f0e0e20L, 0x232feff8L)
+        val keys = Array(0x23eed7e0L, 0x4fcf0f94L, 0x29fec3c0L, 0x45df1f9eL, 0x2cf6c9d0L, 0x40d7179bL, 0x2e72ccd8L, 0x42539399L, 0x2f30ce5cL, 0x4311d198L, 0x2f91cf1eL, 0x43b07098L)
+
+        Clefia.gfn4Inverse(Clefia.gfn4(input, keys, 6), keys, 6) should be (input)
+        Clefia.gfn4Inverse(Clefia.gfn4H(input, keys, 6), keys, 6) should be (input)
+      }
+
+    }
+
     "should doubleSwap" - {
       "a 128 string correctly" in {
         Clefia.doubleSwap("11111112222222222222222222222222222222222222222222222222222222223333333333333333333333333333333333333333333333333333333337777777") should be("22222222222222222222222222222222222222222222222222222222277777771111111333333333333333333333333333333333333333333333333333333333")
