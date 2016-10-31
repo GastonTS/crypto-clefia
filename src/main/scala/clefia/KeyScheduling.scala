@@ -90,7 +90,26 @@ object KeyScheduling {
     (baseKey, loop(GFN.gfn4(baseKey, CON128.slice(0, 24), 12), 0, Array()))
   }
 
-  def from192Key(baseKey: Numeric192): (Numeric128, Array[Long]) = ???
+  def from192Key(baseKey: Numeric192): (Numeric128, Array[Long]) = {
+    val (k0, k1, k2, k3, k4, k5) = baseKey
+    val (kl, kr) = ((k0, k1, k2, k3), (k4, k5, k0.neg32, k1.neg32))
+    val l = GFN.gfn8(kl.concat(kr), CON192.slice(0, 40), 10)
+
+    def loop(ll: Numeric128, lr: Numeric128, i: Int, acc: Array[Long]): Array[Long] =
+      if (i == 11) acc
+      else {
+        val (workerL, workerKey, nll, nlr) = if (List(1,0).contains(i % 4)) (ll, kr, doubleSwap(ll), lr)
+        else  (lr, kl, ll, doubleSwap(lr))
+
+        val t = workerL ^ (CON192(40 + 4 * i), CON192(40 + 4 * i + 1), CON192(40 + 4 * i  + 2), CON192(40 + 4 * i  + 3))
+        val rks = if(i % 2 == 0) t else t ^ workerKey
+
+        loop(nll, nlr, i + 1, acc ++ rks.toArray)
+      }
+
+    (kl ^ kr, loop(l.first128, l.last128, 0, Array()))
+  }
+
   def from256Key(baseKey: Numeric256): (Numeric128, Array[Long]) = ???
 
 }

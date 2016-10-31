@@ -39,6 +39,7 @@ object Numeric {
   implicit class LongBytesOps(num: Long) {
     def getBytes: Numeric32 = Array(num >>> 24, num >>> 16, num >>> 8, num).map( b => (b & 0xff).toInt).toNumeric32
     def concatBytes(other: Long): Long = num * 256 + other
+    def neg32 = ~num & 0xFFFFFFFFL
   }
 
   implicit class IntArrayToNumerics(a: Array[Int]) {
@@ -58,10 +59,13 @@ object Numeric {
   implicit class Numeric128Ops(num: Numeric128) {
     def ^(other: Numeric128): Numeric128 = (num._1 ^ other._1, num._2 ^ other._2, num._3 ^ other._3, num._4 ^ other._4)
     def toArray: Array[Long] = Array(num._1, num._2, num._3 ,num._4)
+    def concat(other: Numeric128) = (num._1, num._2, num._3 ,num._4, other._1, other._2, other._3 , other._4)
   }
 
   implicit class Numeric256Ops(num: Numeric256) {
-    def toArray: Array[Long] = Array(num._1, num._2, num._3 ,num._4, num._5, num._6, num._7 ,num._8)
+    def toArray: Array[Long] = Array(num._1, num._2, num._3 ,num._4, num._5, num._6, num._7, num._8)
+    def first128: Numeric128 =  (num._1, num._2, num._3 ,num._4)
+    def last128: Numeric128 =  (num._5, num._6, num._7, num._8)
   }
 
 }
