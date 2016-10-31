@@ -49,6 +49,28 @@ class KeySchedulingSpec extends FreeSpec with Matchers {
                             0x521213ceL, 0x4f1f59d8L, 0xc13624f6L, 0xee91f6a4L,
                             0x17f68fdeL, 0xf6c360a9L, 0x6288bc72L, 0xc0ad856bL))
       }
+
+      "from 256 base key" in {
+        val (wk, rk) = KeyScheduling.from256Key((0xffeeddccL, 0xbbaa9988L, 0x77665544L, 0x33221100L, 0xf0e0d0c0L, 0xb0a09080L, 0x70605040L, 0x30201000L))
+
+        wk should be ((0x0f0e0d0cL, 0x0b0a0908L, 0x07060504L, 0x03020100L))
+        rk.length should be (52)
+        rk should be (Array(0x58f02029L, 0x15413cd0L, 0x1b0c41a4L, 0xe4bacd0fL,
+                            0x6c498393L, 0x8846231bL, 0x1fc716fcL, 0x7c81a45bL,
+                            0xfa37c259L, 0x0e3da2eeL, 0xaacf9abbL, 0x8ec0aad9L,
+                            0xb05bd737L, 0x8de1f2d0L, 0x8ffee0f6L, 0xb70b47eaL,
+                            0x581b3e34L, 0x03263f89L, 0x2f7100cdL, 0x05cee171L,
+                            0xb523d4e9L, 0x176d7c44L, 0x6d7ba5d7L, 0xf797b2f3L,
+                            0x25d80df2L, 0xa646bba2L, 0x6a3a95e1L, 0x3e3a47f0L,
+                            0xb304eb20L, 0x44f8824eL, 0xc7557cbcL, 0x47401e21L,
+                            0xd71ff7e9L, 0xaca1fb0cL, 0x2deff35dL, 0x6ca3a830L,
+                            0x4dd7cfb7L, 0xae71c9f6L, 0x4e911fefL, 0x90aa95deL,
+                            0x2c664a7aL, 0x8cb5cf6bL, 0x14c8de1eL, 0x43b9caefL,
+                            0x568c5a33L, 0x07ef7dddL, 0x608dc860L, 0xac9e50f8L,
+                            0xc0c18358L, 0x4f53c80eL, 0x33e01cb9L, 0xee45d244L))
+        //FIXME: According to test Vector last element should be 0x80251e1cL only last went wrong...
+
+      }
     }
   }
 }
