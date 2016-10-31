@@ -67,8 +67,7 @@ class KeySchedulingSpec extends FreeSpec with Matchers {
                             0x4dd7cfb7L, 0xae71c9f6L, 0x4e911fefL, 0x90aa95deL,
                             0x2c664a7aL, 0x8cb5cf6bL, 0x14c8de1eL, 0x43b9caefL,
                             0x568c5a33L, 0x07ef7dddL, 0x608dc860L, 0xac9e50f8L,
-                            0xc0c18358L, 0x4f53c80eL, 0x33e01cb9L, 0xee45d244L))
-        //FIXME: According to test Vector last element should be 0x80251e1cL only last went wrong...
+                            0xc0c18358L, 0x4f53c80eL, 0x33e01cb9L, 0x80251e1cL))
       }
     }
   }

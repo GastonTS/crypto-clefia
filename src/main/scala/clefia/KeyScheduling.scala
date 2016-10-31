@@ -67,7 +67,7 @@ object KeyScheduling {
                     0x8a4584b7L, 0xe664a43dL, 0xa933c25bL, 0xc512d21eL,
                     0xb888e12dL, 0xd4a9690fL, 0x644d58a6L, 0x086cacd3L,
                     0xde372c53L, 0xb216d669L, 0x830a9629L, 0xef2beb34L,
-                    0x798c6324L, 0x15ad6dceL, 0x04cf99a2L, 0x68ee2ebL)
+                    0x798c6324L, 0x15ad6dceL, 0x04cf99a2L, 0x68ee2eb3L)
 
   def doubleSwap(x: Numeric128): Numeric128 = {
     val (n0, n1, n2, n3) = x
@@ -97,7 +97,7 @@ object KeyScheduling {
       if (i == threshold) acc
       else {
         val (workerL, workerKey, nll, nlr) = if (List(1,0).contains(i % 4)) (ll, kr, doubleSwap(ll), lr)
-        else  (lr, kl, ll, doubleSwap(lr))
+                                             else  (lr, kl, ll, doubleSwap(lr))
 
         val t = workerL ^ (con(40 + 4 * i), con(40 + 4 * i + 1), con(40 + 4 * i  + 2), con(40 + 4 * i  + 3))
         val rks = if(i % 2 == 0) t else t ^ workerKey
@@ -117,7 +117,6 @@ object KeyScheduling {
 
   def scheduleKeys(baseKey: Numeric256): (Numeric128, Array[Long]) = {
     val (kl, kr) = (baseKey.first128, baseKey.last128)
-    println(fromMoreThan128(CON256, 13, kl, kr)._2.toList)
     fromMoreThan128(CON256, 13, kl, kr)
   }
 
