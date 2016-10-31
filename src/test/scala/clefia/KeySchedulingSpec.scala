@@ -16,7 +16,7 @@ class KeySchedulingSpec extends FreeSpec with Matchers {
 
     "get whitening and round keys" - {
       "from 128 base key" in {
-        val (wk, rk) = KeyScheduling.from128Key((0xffeeddccL, 0xbbaa9988L, 0x77665544L, 0x33221100L))
+        val (wk, rk) = KeyScheduling.scheduleKeys((0xffeeddccL, 0xbbaa9988L, 0x77665544L, 0x33221100L))
 
         wk should be ((0xffeeddccL, 0xbbaa9988L, 0x77665544L, 0x33221100L))
         rk.length should be (36)
@@ -33,7 +33,7 @@ class KeySchedulingSpec extends FreeSpec with Matchers {
       }
 
       "from 192 base key" in {
-        val (wk, rk) = KeyScheduling.from192Key((0xffeeddccL, 0xbbaa9988L, 0x77665544L, 0x33221100L, 0xf0e0d0c0L, 0xb0a09080L))
+        val (wk, rk) = KeyScheduling.scheduleKeys((0xffeeddccL, 0xbbaa9988L, 0x77665544L, 0x33221100L, 0xf0e0d0c0L, 0xb0a09080L))
 
         wk should be ((0x0f0e0d0cL, 0x0b0a0908L, 0x77777777L, 0x77777777L))
         rk.length should be (44)
@@ -51,7 +51,7 @@ class KeySchedulingSpec extends FreeSpec with Matchers {
       }
 
       "from 256 base key" in {
-        val (wk, rk) = KeyScheduling.from256Key((0xffeeddccL, 0xbbaa9988L, 0x77665544L, 0x33221100L, 0xf0e0d0c0L, 0xb0a09080L, 0x70605040L, 0x30201000L))
+        val (wk, rk) = KeyScheduling.scheduleKeys((0xffeeddccL, 0xbbaa9988L, 0x77665544L, 0x33221100L, 0xf0e0d0c0L, 0xb0a09080L, 0x70605040L, 0x30201000L))
 
         wk should be ((0x0f0e0d0cL, 0x0b0a0908L, 0x07060504L, 0x03020100L))
         rk.length should be (52)
@@ -69,7 +69,6 @@ class KeySchedulingSpec extends FreeSpec with Matchers {
                             0x568c5a33L, 0x07ef7dddL, 0x608dc860L, 0xac9e50f8L,
                             0xc0c18358L, 0x4f53c80eL, 0x33e01cb9L, 0xee45d244L))
         //FIXME: According to test Vector last element should be 0x80251e1cL only last went wrong...
-
       }
     }
   }

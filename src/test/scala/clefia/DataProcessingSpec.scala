@@ -14,19 +14,19 @@ class DataProcessingSpec extends FreeSpec with Matchers {
 
     "should encript" - {
       "4 longs in 6 rounds" in {
-        DataProcessing.enc(text, whitheningKeys, roundKeys, 6) should be ((67455211L, 787557980L, 2504251662L, 3578610116L))
+        DataProcessing.enc(text, (whitheningKeys, roundKeys), 6) should be ((67455211L, 787557980L, 2504251662L, 3578610116L))
       }
     }
 
     "should decript" - {
       "4 longs" in {
-        DataProcessing.dec(text, whitheningKeys, roundKeys, 6) should be ((3139536795L, 2914691108L, 4171539034L, 798159417L))
+        DataProcessing.dec(text, (whitheningKeys, roundKeys), 6) should be ((3139536795L, 2914691108L, 4171539034L, 798159417L))
       }
     }
 
     "assure encript and decript are inverse functions" - {
       "4 longs" in {
-        DataProcessing.dec(DataProcessing.enc(text, whitheningKeys, roundKeys, 6), whitheningKeys, roundKeys, 6) should be (text)
+        DataProcessing.dec(DataProcessing.enc(text, (whitheningKeys, roundKeys), 6), (whitheningKeys, roundKeys), 6) should be (text)
       }
     }
   }

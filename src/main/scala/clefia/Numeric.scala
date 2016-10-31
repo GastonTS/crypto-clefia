@@ -4,6 +4,7 @@ package clefia
   */
 
 object Numeric {
+
   type Numeric32 = (Int, Int, Int, Int)
   type Numeric128 = (Long, Long, Long, Long)
   type Numeric192 = (Long, Long, Long, Long, Long, Long)

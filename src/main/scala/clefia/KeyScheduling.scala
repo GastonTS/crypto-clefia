@@ -77,7 +77,7 @@ object KeyScheduling {
     ((n2 << 25) & 0xfe000000L) | (n3 >>> 7))  //n2.last7  - n3.first25
   }
 
-  def from128Key(baseKey: Numeric128): (Numeric128, Array[Long]) = {
+  def scheduleKeys(baseKey: Numeric128): (Numeric128, Array[Long]) = {
     def loop(l: Numeric128, i: Int, acc: Array[Long]): Array[Long] =
       if (i == 9) acc
       else {
@@ -108,14 +108,14 @@ object KeyScheduling {
     (kl ^ kr, loop(l.first128, l.last128, 0, Array()))
   }
 
-  def from192Key(baseKey: Numeric192): (Numeric128, Array[Long]) = {
+  def scheduleKeys(baseKey: Numeric192): (Numeric128, Array[Long]) = {
     val (k0, k1, k2, k3, k4, k5) = baseKey
     val (kl, kr) = ((k0, k1, k2, k3), (k4, k5, k0.neg32, k1.neg32))
 
     fromMoreThan128(CON192, 11, kl, kr)
   }
 
-  def from256Key(baseKey: Numeric256): (Numeric128, Array[Long]) = {
+  def scheduleKeys(baseKey: Numeric256): (Numeric128, Array[Long]) = {
     val (kl, kr) = (baseKey.first128, baseKey.last128)
     println(fromMoreThan128(CON256, 13, kl, kr)._2.toList)
     fromMoreThan128(CON256, 13, kl, kr)
