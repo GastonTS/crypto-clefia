@@ -5,6 +5,9 @@ import clefia.Numeric._
 /**
   * Created by gastonsantoalla on 30/10/16.
   */
+
+case class Keys(whiteningKeys: Numeric128, roundKeys: Array[Long])
+
 object KeyScheduling {
 
   val CON128 = Array(0xf56b7aebL, 0x994a8a42L, 0x96a4bd75L, 0xfa854521L,
@@ -77,7 +80,7 @@ object KeyScheduling {
     ((n2 << 25) & 0xfe000000L) | (n3 >>> 7))  //n2.last7  - n3.first25
   }
 
-  def scheduleKeys(baseKey: Numeric128): (Numeric128, Array[Long]) = {
+  def scheduleKeys(baseKey: Numeric128): Keys = {
     def loop(l: Numeric128, i: Int, acc: Array[Long]): Array[Long] =
       if (i == 9) acc
       else {
@@ -87,7 +90,7 @@ object KeyScheduling {
         loop(doubleSwap(l), i + 1, acc ++ rks.toArray)
       }
 
-    (baseKey, loop(GFN.gfn4(baseKey, CON128.slice(0, 24), 12), 0, Array()))
+    Keys(baseKey, loop(GFN.gfn4(baseKey, CON128.slice(0, 24), 12), 0, Array()))
   }
 
   private def fromMoreThan128(con: Array[Long], threshold: Int, kl: Numeric128, kr: Numeric128) = {
@@ -105,17 +108,17 @@ object KeyScheduling {
         loop(nll, nlr, i + 1, acc ++ rks.toArray)
       }
 
-    (kl ^ kr, loop(l.first128, l.last128, 0, Array()))
+    Keys(kl ^ kr, loop(l.first128, l.last128, 0, Array()))
   }
 
-  def scheduleKeys(baseKey: Numeric192): (Numeric128, Array[Long]) = {
+  def scheduleKeys(baseKey: Numeric192): Keys = {
     val (k0, k1, k2, k3, k4, k5) = baseKey
     val (kl, kr) = ((k0, k1, k2, k3), (k4, k5, k0.neg32, k1.neg32))
 
     fromMoreThan128(CON192, 11, kl, kr)
   }
 
-  def scheduleKeys(baseKey: Numeric256): (Numeric128, Array[Long]) = {
+  def scheduleKeys(baseKey: Numeric256): Keys = {
     val (kl, kr) = (baseKey.first128, baseKey.last128)
     fromMoreThan128(CON256, 13, kl, kr)
   }

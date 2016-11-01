@@ -7,7 +7,7 @@ import clefia.Numeric._
   */
 object Clefia {
 
-  def process[T](plaintText: Numeric128, key: T, f: (Numeric128, (Numeric128, Array[Long]), Int) => Numeric128 ): Numeric128 = {
+  def process[T](plaintText: Numeric128, key: T, f: (Numeric128, Keys, Int) => Numeric128 ): Numeric128 = {
     key match  {
       case (k0: Long, k1: Long, k2: Long, k3: Long) =>
         f(plaintText, KeyScheduling.scheduleKeys((k0, k1, k2, k3)), 18)
