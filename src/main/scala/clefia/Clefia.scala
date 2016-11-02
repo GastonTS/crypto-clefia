@@ -27,8 +27,9 @@ object Clefia {
   def decryptBlock[T](block: Numeric128, key: T): Numeric128 = decrypt(List(block), key).head
 
   def encryptText[T](plaintText: String, key: T): String = {
-    val padding = 8 - plaintText.length % 8
-    val stringBlocks = (padding + " " * (padding -1) + plaintText).toNumeric128Blocks.par
+    val mod = plaintText.length % 8
+    val padding = if(mod == 0) "" else 8 - mod + " " * (7 - mod)
+    val stringBlocks = (padding + plaintText).toNumeric128Blocks.par
 
     encrypt(stringBlocks, key).map(_.toRealString).mkString
   }
@@ -36,8 +37,9 @@ object Clefia {
   def decryptText[T](cipherText: String, key: T): String = {
     val stringBlocks = cipherText.toNumeric128Blocks.par
     val decryptedString = decrypt(stringBlocks, key).map(_.toRealString).mkString
+    val firstDigit = decryptedString.head.asDigit
 
-    decryptedString.substring(decryptedString.head.asDigit)
+    if(firstDigit != -1) decryptedString.substring(firstDigit) else decryptedString
   }
 
   def encryptFile[T](originPath: String, destinationPath: String, key: T) = ???
