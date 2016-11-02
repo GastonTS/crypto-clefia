@@ -83,22 +83,22 @@ object GFN {
     0x02, 0x0a, 0x01, 0x08,
     0x0a, 0x02, 0x08, 0x01)
 
-  def getTValues(key: Long, block: Long): Numeric32 = {
+  def getTValues(key: Int, block: Int): Numeric32 = {
     (key ^ block).getBytes
   }
 
-  def f0(key: Long, block: Long): Long = {
+  def f0(key: Int, block: Int): Int= {
     val (t0, t1, t2, t3) = getTValues(key, block)
     M0.squareMatrixXVector(Array(S0(t0), S1(t1), S0(t2), S1(t3))).concatBytes
   }
 
-  def f1(key: Long, block: Long): Long = {
+  def f1(key: Int, block: Int): Int = {
     val (t0, t1, t2, t3) = getTValues(key, block)
     M1.squareMatrixXVector(Array(S1(t0), S0(t1), S1(t2), S0(t3))).concatBytes
   }
 
   //Harcoded GFNs exactly as the refference text
-  def gfn4H(input: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = {
+  def gfn4H(input: Numeric128, roundKeys:Array[Int], rounds: Int): Numeric128 = {
     def shuffle(t: Numeric128, i: Int): Numeric128 = {
       val (t0, t1, t2, t3) = t
 
@@ -109,7 +109,7 @@ object GFN {
     shuffle(input, 0)
   }
 
-  def gfn8H(input: Numeric256, roundKeys:Array[Long], rounds: Int): Numeric256 = {
+  def gfn8H(input: Numeric256, roundKeys:Array[Int], rounds: Int): Numeric256 = {
     def shuffle(t: Numeric256, i: Int): Numeric256 = {
       val (t0, t1, t2, t3, t4, t5, t6, t7) = t
 
@@ -121,9 +121,9 @@ object GFN {
   }
 
   //Generic gfn
-  def gfn(input: Array[Long], roundKeys:Array[Long], rounds: Int): Array[Long] = {
+  def gfn(input: Array[Int], roundKeys:Array[Int], rounds: Int): Array[Int] = {
     val factor = input.length / 2
-    def shuffle(t: Array[Long], i: Int): Array[Long] =
+    def shuffle(t: Array[Int], i: Int): Array[Int] =
       if (i == rounds) t.last +: t.init
       else {
         val newT = t.zipWithIndex.map { case (v, index) =>
@@ -138,10 +138,10 @@ object GFN {
 
     shuffle(input, 0)
   }
-  def gfn4(input: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = gfn(input.toArray, roundKeys, rounds).toNumeric128
-  def gfn8(input: Numeric256, roundKeys:Array[Long], rounds: Int): Numeric256 = gfn(input.toArray, roundKeys, rounds).toNumeric256
+  def gfn4(input: Numeric128, roundKeys:Array[Int], rounds: Int): Numeric128 = gfn(input.toArray, roundKeys, rounds).toNumeric128
+  def gfn8(input: Numeric256, roundKeys:Array[Int], rounds: Int): Numeric256 = gfn(input.toArray, roundKeys, rounds).toNumeric256
 
-  def gfn4Inverse(input: Numeric128, roundKeys:Array[Long], rounds: Int): Numeric128 = {
+  def gfn4Inverse(input: Numeric128, roundKeys:Array[Int], rounds: Int): Numeric128 = {
     def shuffle(t: Numeric128, i: Int): Numeric128 = {
       val (t0, t1, t2, t3) = t
 

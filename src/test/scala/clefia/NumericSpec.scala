@@ -9,16 +9,16 @@ import org.scalatest.{FreeSpec, Matchers}
 class NumericSpec extends FreeSpec with Matchers{
   "should handle bytes" - {
     "getting bytes" in {
-      37162340L.getBytes should be ((2,55,13,100))
+      37162340.getBytes should be ((2,55,13,100))
     }
 
     "concatenating bytes" in {
-      Array(1, 69, 51, 56).concatBytes should be (21312312L)
+      Array(1, 69, 51, 56).map(_.toShort).concatBytes should be (21312312)
     }
 
     "concat should be inverse of get" in {
-      Array(11, 52, 255, 200).concatBytes.getBytes should be ((11, 52, 255, 200))
-      393829L.getBytes.toArray.concatBytes should be (393829L)
+      Array(11, 52, 255, 200).map(_.toShort).concatBytes.getBytes should be ((11, 52, 255, 200))
+      393829.getBytes.toArray.concatBytes should be (393829)
     }
   }
 

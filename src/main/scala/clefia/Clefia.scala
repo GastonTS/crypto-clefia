@@ -11,9 +11,9 @@ object Clefia {
 
   def process[T](blocks: GenSeq[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128 ): GenSeq[Numeric128] = {
     val (keys, rounds) = key match  {
-      case (k0: Long, k1: Long, k2: Long, k3: Long) => (KeyScheduling.scheduleKeys((k0, k1, k2, k3)), 18)
-      case (k0: Long, k1: Long, k2: Long, k3: Long, k4: Long, k5: Long) => (KeyScheduling.scheduleKeys((k0, k1, k2, k3, k4, k5)), 22)
-      case (k0: Long, k1: Long, k2: Long, k3: Long, k4: Long, k5: Long, k6: Long, k7: Long) => (KeyScheduling.scheduleKeys((k0, k1, k2, k3, k4, k5, k6, k7)), 26)
+      case (k0: Int, k1: Int, k2: Int, k3: Int) => (KeyScheduling.scheduleKeys((k0, k1, k2, k3)), 18)
+      case (k0: Int, k1: Int, k2: Int, k3: Int, k4: Int, k5: Int) => (KeyScheduling.scheduleKeys((k0, k1, k2, k3, k4, k5)), 22)
+      case (k0: Int, k1: Int, k2: Int, k3: Int, k4: Int, k5: Int, k6: Int, k7: Int) => (KeyScheduling.scheduleKeys((k0, k1, k2, k3, k4, k5, k6, k7)), 26)
       case _ => throw new InvalidKeyException("Invalid Key")
     }
 
