@@ -113,7 +113,7 @@ object KeyScheduling {
 
   def scheduleKeys(baseKey: Numeric192): Keys = {
     val (k0, k1, k2, k3, k4, k5) = baseKey
-    val (kl, kr) = ((k0, k1, k2, k3), (k4, k5, k0.neg32, k1.neg32))
+    val (kl, kr) = ((k0, k1, k2, k3), (k4, k5, ~k0, ~k1))
 
     fromMoreThan128(CON192, 11, kl, kr)
   }

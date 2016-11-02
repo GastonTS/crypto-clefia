@@ -38,8 +38,13 @@ object Numeric {
 
   implicit class IntBytesOps(num: Int) {
     def getBytes: Numeric32 = Array(num >>> 24, num >>> 16, num >>> 8, num).map( b => (b & 0xff).toShort).toNumeric32
+    def getChars: Array[Char] = Array(num >>> 16, num & 0xffff).map(_.toChar)
     def concatBytes(other: Int): Int = num * 256 + other
-    def neg32 = ~num & 0xFFFFFFFF
+  }
+
+  implicit class StringToNumerics(s: String) {
+    def toNumeric128: Numeric128 = s.toCharArray.map(_.toInt).grouped(2).toArray.map(_.concatChars).toNumeric128
+    def toNumeric128Blocks: List[Numeric128] = s.grouped(8).map(_.toNumeric128).toList
   }
 
   implicit class ShortArrayToNumerics(a: Array[Short]) {
@@ -50,6 +55,7 @@ object Numeric {
   implicit class IntArrayToNumerics(a: Array[Int]) {
     def toNumeric128: Numeric128 = (a(0), a(1), a(2), a(3))
     def toNumeric256: Numeric256 = (a(0), a(1), a(2), a(3), a(4), a(5), a(6), a(7))
+    def concatChars: Int = a(0) << 16 | a(1)
   }
 
   implicit class Numeric32Ops(num: Numeric32) {
@@ -59,6 +65,7 @@ object Numeric {
   implicit class Numeric128Ops(num: Numeric128) {
     def ^(other: Numeric128): Numeric128 = (num._1 ^ other._1, num._2 ^ other._2, num._3 ^ other._3, num._4 ^ other._4)
     def toArray: Array[Int] = Array(num._1, num._2, num._3 ,num._4)
+    def toRealString: String = num.toArray.flatMap(_.getChars).mkString
     def concat(other: Numeric128) = (num._1, num._2, num._3 ,num._4, other._1, other._2, other._3 , other._4)
   }
 

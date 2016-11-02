@@ -117,5 +117,13 @@ class ClefiaSpec extends FreeSpec with Matchers {
         Clefia.decrypt(Clefia.encrypt(cipherText, plainText.head), plainText.head) should be (cipherText)
       }
     }
+
+    "should handle strings as texts" - {
+      "assure encrypt and decrypt are inverse" in {
+        val key = (0xffeeddcc, 0xbbaa9988, 0x77665544, 0x33221100)
+        val plainText = "Mr. Sarlomp es un buen hombre"
+        Clefia.decryptText(Clefia.encryptText(plainText, key), key) should be (plainText)
+      }
+    }
   }
 }
