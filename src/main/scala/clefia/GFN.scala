@@ -89,12 +89,12 @@ object GFN {
 
   def f0(key: Int, block: Int): Int= {
     val (t0, t1, t2, t3) = getTValues(key, block)
-    M0.squareMatrixXVector(Array(S0(t0), S1(t1), S0(t2), S1(t3))).concatBytes
+    M0.squareMatrixXVector(Array(S0(t0), S1(t1), S0(t2), S1(t3))).toNumeric32.concatBytes
   }
 
   def f1(key: Int, block: Int): Int = {
     val (t0, t1, t2, t3) = getTValues(key, block)
-    M1.squareMatrixXVector(Array(S1(t0), S0(t1), S1(t2), S0(t3))).concatBytes
+    M1.squareMatrixXVector(Array(S1(t0), S0(t1), S1(t2), S0(t3))).toNumeric32.concatBytes
   }
 
   //Harcoded GFNs exactly as the refference text

@@ -13,12 +13,14 @@ class NumericSpec extends FreeSpec with Matchers{
     }
 
     "concatenating bytes" in {
-      Array(1, 69, 51, 56).map(_.toShort).concatBytes should be (21312312)
+      val n: Numeric32 = (1, 69, 51, 56)
+      n.concatBytes should be (21312312)
     }
 
     "concat should be inverse of get" in {
-      Array(11, 52, 255, 200).map(_.toShort).concatBytes.getBytes should be ((11, 52, 255, 200))
-      393829.getBytes.toArray.concatBytes should be (393829)
+      val n: Numeric32 = (11, 52, 255, 200)
+      n.concatBytes.getBytes should be (n)
+      393829.getBytes.concatBytes should be (393829)
     }
   }
 

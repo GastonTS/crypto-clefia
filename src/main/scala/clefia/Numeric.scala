@@ -39,7 +39,6 @@ object Numeric {
   implicit class IntBytesOps(num: Int) {
     def getBytes: Numeric32 = Array(num >>> 24, num >>> 16, num >>> 8, num).map( b => (b & 0xff).toShort).toNumeric32
     def getChars: Array[Char] = Array(num >>> 16, num & 0xffff).map(_.toChar)
-    def concatBytes(other: Int): Int = num * 256 + other
   }
 
   implicit class StringToNumerics(s: String) {
@@ -49,7 +48,6 @@ object Numeric {
 
   implicit class ShortArrayToNumerics(a: Array[Short]) {
     def toNumeric32: Numeric32 = (a(0), a(1), a(2), a(3))
-    def concatBytes: Int =  a.map(_.toInt).reduce(_.concatBytes(_))
   }
 
   implicit class IntArrayToNumerics(a: Array[Int]) {
@@ -60,6 +58,7 @@ object Numeric {
 
   implicit class Numeric32Ops(num: Numeric32) {
     def toArray: Array[Short] = Array(num._1, num._2, num._3 ,num._4)
+    def concatBytes: Int =  num._1 << 24 | num._2 << 16 | num._3 << 8 | num._4
   }
 
   implicit class Numeric128Ops(num: Numeric128) {
