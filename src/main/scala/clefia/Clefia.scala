@@ -47,7 +47,7 @@ object Clefia {
   def encryptFile[T](originPath: String, destinationPath: String, key: T) = {
     val byteArray = Files.readAllBytes(Paths.get(originPath))
     //TODO: Add padd
-    val blocks = getBlocks(byteArray)
+    val blocks = getBlocks(byteArray).par
 
     val finalPath = Paths.get(destinationPath)
     println(f"Encrypted File: ${Files.write(finalPath, getByteArray(encrypt(blocks, key)))}")
@@ -64,11 +64,9 @@ object Clefia {
     finalPath.toString
   }
 
-  def getBlocks(a: Array[Byte]): GenSeq[Numeric128] = a.grouped(4).map(b => ByteBuffer.wrap(Array[Byte](b(0), b(1), b(2), b(3))).getInt).grouped(4).map(_.toArray.toNumeric128).toList
+  def getBlocks(a: Array[Byte]): GenSeq[Numeric128] =
+    a.grouped(4).map(b => ByteBuffer.wrap(Array[Byte](b(0), b(1), b(2), b(3))).getInt).grouped(4).map(_.toArray.toNumeric128).toSeq
 
-  def getByteArray(blocks: GenSeq[Numeric128]) = {
-    val buffer: ByteBuffer = ByteBuffer.allocate(16 * blocks.length)
-    blocks.foreach(b => buffer.putInt(b._1).putInt(b._2).putInt(b._3).putInt(b._4))
-    buffer.array()
-  }
+  def getByteArray(blocks: GenSeq[Numeric128]): Array[Byte] =
+    blocks.flatMap { b => ByteBuffer.allocate(16).putInt(b._1).putInt(b._2).putInt(b._3).putInt(b._4)array() }.toArray
 }
