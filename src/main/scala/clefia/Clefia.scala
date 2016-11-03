@@ -28,6 +28,12 @@ object Clefia {
   def processText[T](text: String, key: T, f: (GenSeq[Numeric128], T) => GenSeq[Numeric128]): String =
     f(text.toNumeric128Blocks.par, key).map(_.toRealString).mkString
 
+  def processFile[T](originPath: String, destinationPath: String, key: T, operation: String, f: (Array[Byte], T) => Array[Byte]) = {
+    val finalPath = Paths.get(destinationPath)
+    println(f"$operation: ${Files.write(finalPath, f(Files.readAllBytes(Paths.get(originPath)), key))}")
+    finalPath.toString
+  }
+
   def encrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks, key, DataProcessing.enc)
   def decrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks, key, DataProcessing.dec)
 
@@ -44,24 +50,30 @@ object Clefia {
     decryptedString.dropRight(8 - decryptedString.last.asDigit)
   }
 
-  def encryptFile[T](originPath: String, destinationPath: String, key: T) = {
-    val byteArray = Files.readAllBytes(Paths.get(originPath))
+  def encryptBytes[T](byteArray: Array[Byte], key: T): Array[Byte] = {
     val mod = byteArray.length % 16
     val paddedArray = byteArray ++ Array.fill(15 - mod)(0.toByte) :+ mod.toByte
-
-    val finalPath = Paths.get(destinationPath)
-    println(f"Encrypted File: ${Files.write(finalPath, getByteArray(encrypt(getBlocks(paddedArray).par, key)))}")
-    finalPath.toString
+    getByteArray(encrypt(getBlocks(paddedArray).par, key))
   }
 
-  def decryptFile[T](originPath: String, destinationPath: String, key: T) = {
-    val byteArray = Files.readAllBytes(Paths.get(originPath))
+  def decryptBytes[T](byteArray: Array[Byte], key: T): Array[Byte] = {
     val decryptedArray = getByteArray(decrypt(getBlocks(byteArray).par, key))
+    decryptedArray.dropRight(16 - decryptedArray.last)
+  }
 
+  def encryptFile[T](originPath: String, destinationPath: String, key: T) = processFile(originPath, destinationPath, key, "Encrypted File", encryptBytes)
+  def decryptFile[T](originPath: String, destinationPath: String, key: T) = processFile(originPath, destinationPath, key, "Decrypted File", decryptBytes)
+
+  def processFileExceptHeader[T](originPath: String, destinationPath: String, key: T, headerSize: Int, operation: String, f: (Array[Byte], T) => Array[Byte]) = {
+    val byteArray = Files.readAllBytes(Paths.get(originPath))
     val finalPath = Paths.get(destinationPath)
-    println(f"Encrypted File: ${Files.write(finalPath, decryptedArray.dropRight(16 - decryptedArray.last))}")
+    val (header, body) = byteArray.splitAt(headerSize)
+    println(f"$operation: ${Files.write(finalPath, header ++ f(body, key))}")
     finalPath.toString
   }
+
+  def encryptBMP[T](originPath: String, destinationPath: String, key: T) = processFileExceptHeader(originPath, destinationPath, key, 54, "Encrypted BMP", encryptBytes)
+  def decryptBMP[T](originPath: String, destinationPath: String, key: T) = processFileExceptHeader(originPath, destinationPath, key, 54, "Decrypted BMP", decryptBytes)
 
   def getBlocks(a: Array[Byte]): GenSeq[Numeric128] =
     a.grouped(4).map(b => ByteBuffer.wrap(Array[Byte](b(0), b(1), b(2), b(3))).getInt).grouped(4).map(_.toArray.toNumeric128).toSeq
