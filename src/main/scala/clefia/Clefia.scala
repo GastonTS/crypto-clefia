@@ -1,5 +1,8 @@
 package clefia
 
+import java.nio.ByteBuffer
+import java.nio.file.{Files, Paths}
+
 import clefia.Numeric._
 
 import scala.collection.GenSeq
@@ -41,7 +44,31 @@ object Clefia {
     decryptedString.dropRight(8 - decryptedString.last.asDigit)
   }
 
-  def encryptFile[T](originPath: String, destinationPath: String, key: T) = ???
-  def decryptFile[T](originPath: String, destinationPath: String, key: T) = ???
+  def encryptFile[T](originPath: String, destinationPath: String, key: T) = {
+    val byteArray = Files.readAllBytes(Paths.get(originPath))
+    //TODO: Add padd
+    val blocks = getBlocks(byteArray)
 
+    val finalPath = Paths.get(destinationPath)
+    println(f"Encrypted File: ${Files.write(finalPath, getByteArray(encrypt(blocks, key)))}")
+    finalPath.toString
+  }
+
+  def decryptFile[T](originPath: String, destinationPath: String, key: T) = {
+    val byteArray = Files.readAllBytes(Paths.get(originPath))
+    val blocks = getBlocks(byteArray).par
+    //TODO: Remove padd
+
+    val finalPath = Paths.get(destinationPath)
+    println(f"Encrypted File: ${Files.write(finalPath, getByteArray(decrypt(blocks, key)))}")
+    finalPath.toString
+  }
+
+  def getBlocks(a: Array[Byte]): GenSeq[Numeric128] = a.grouped(4).map(b => ByteBuffer.wrap(Array[Byte](b(0), b(1), b(2), b(3))).getInt).grouped(4).map(_.toArray.toNumeric128).toList
+
+  def getByteArray(blocks: GenSeq[Numeric128]) = {
+    val buffer: ByteBuffer = ByteBuffer.allocate(16 * blocks.length)
+    blocks.foreach(b => buffer.putInt(b._1).putInt(b._2).putInt(b._3).putInt(b._4))
+    buffer.array()
+  }
 }
