@@ -24,3 +24,7 @@ project/
 .classpath
 .project
 .settings/
+
+#Clefia-Tests
+encrypted.bmp
+decrypted.bmp
