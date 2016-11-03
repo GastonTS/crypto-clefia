@@ -7,6 +7,8 @@ import scala.collection.GenSeq
 /**
   * Created by gastonsantoalla on 31/10/16.
   */
+class InvalidKeyException(message: String ) extends RuntimeException
+
 object Clefia {
 
   def process[T](blocks: GenSeq[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128 ): GenSeq[Numeric128] = {
@@ -20,14 +22,14 @@ object Clefia {
     blocks.map(f(_, keys, rounds))
   }
 
+  def processText[T](text: String, key: T, f: (GenSeq[Numeric128], T) => GenSeq[Numeric128]): String =
+    f(text.toNumeric128Blocks.par, key).map(_.toRealString).mkString
+
   def encrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks, key, DataProcessing.enc)
   def decrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks, key, DataProcessing.dec)
 
   def encryptBlock[T](block: Numeric128, key: T): Numeric128 = encrypt(List(block), key).head
   def decryptBlock[T](block: Numeric128, key: T): Numeric128 = decrypt(List(block), key).head
-
-  def processText[T](text: String, key: T, f: (GenSeq[Numeric128], T) => GenSeq[Numeric128]): String =
-    f(text.toNumeric128Blocks.par, key).map(_.toRealString).mkString
 
   def encryptText[T](plaintText: String, key: T): String = {
     val mod = plaintText.length % 8
@@ -42,7 +44,4 @@ object Clefia {
   def encryptFile[T](originPath: String, destinationPath: String, key: T) = ???
   def decryptFile[T](originPath: String, destinationPath: String, key: T) = ???
 
-
 }
-
-class InvalidKeyException(message: String ) extends RuntimeException
