@@ -46,21 +46,20 @@ object Clefia {
 
   def encryptFile[T](originPath: String, destinationPath: String, key: T) = {
     val byteArray = Files.readAllBytes(Paths.get(originPath))
-    //TODO: Add padd
-    val blocks = getBlocks(byteArray).par
+    val mod = byteArray.length % 16
+    val paddedArray = byteArray ++ Array.fill(15 - mod)(0.toByte) :+ mod.toByte
 
     val finalPath = Paths.get(destinationPath)
-    println(f"Encrypted File: ${Files.write(finalPath, getByteArray(encrypt(blocks, key)))}")
+    println(f"Encrypted File: ${Files.write(finalPath, getByteArray(encrypt(getBlocks(paddedArray).par, key)))}")
     finalPath.toString
   }
 
   def decryptFile[T](originPath: String, destinationPath: String, key: T) = {
     val byteArray = Files.readAllBytes(Paths.get(originPath))
-    val blocks = getBlocks(byteArray).par
-    //TODO: Remove padd
+    val decryptedArray = getByteArray(decrypt(getBlocks(byteArray).par, key))
 
     val finalPath = Paths.get(destinationPath)
-    println(f"Encrypted File: ${Files.write(finalPath, getByteArray(decrypt(blocks, key)))}")
+    println(f"Encrypted File: ${Files.write(finalPath, decryptedArray.dropRight(16 - decryptedArray.last))}")
     finalPath.toString
   }
 
