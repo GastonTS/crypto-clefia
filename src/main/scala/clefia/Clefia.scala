@@ -26,17 +26,16 @@ object Clefia {
   def encryptBlock[T](block: Numeric128, key: T): Numeric128 = encrypt(List(block), key).head
   def decryptBlock[T](block: Numeric128, key: T): Numeric128 = decrypt(List(block), key).head
 
+  def processText[T](text: String, key: T, f: (GenSeq[Numeric128], T) => GenSeq[Numeric128]): String =
+    f(text.toNumeric128Blocks.par, key).map(_.toRealString).mkString
+
   def encryptText[T](plaintText: String, key: T): String = {
     val mod = plaintText.length % 8
-    val stringBlocks = (plaintText + " " * (7 - mod) + mod).toNumeric128Blocks.par
-
-    encrypt(stringBlocks, key).map(_.toRealString).mkString
+    processText(plaintText + " " * (7 - mod) + mod, key, encrypt)
   }
 
   def decryptText[T](cipherText: String, key: T): String = {
-    val stringBlocks = cipherText.toNumeric128Blocks.par
-    val decryptedString = decrypt(stringBlocks, key).map(_.toRealString).mkString
-
+    val decryptedString = processText(cipherText, key, decrypt)
     decryptedString.dropRight(8 - decryptedString.last.asDigit)
   }
 
