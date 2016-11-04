@@ -42,7 +42,10 @@ object Numeric {
   }
 
   implicit class StringToNumerics(s: String) {
-    def toNumeric128: Numeric128 = s.toCharArray.map(_.toInt).grouped(2).toArray.map(_.concatChars).toNumeric128
+    def toIntArray: Array[Int] = s.toCharArray.map(_.toInt).grouped(2).toArray.map(_.concatChars)
+    def toNumeric128: Numeric128 = s.toIntArray.toNumeric128
+    def toNumeric192: Numeric192 = s.toIntArray.toNumeric192
+    def toNumeric256: Numeric256 = s.toIntArray.toNumeric256
     def toNumeric128Blocks: List[Numeric128] = s.grouped(8).map(_.toNumeric128).toList
   }
 
@@ -52,6 +55,7 @@ object Numeric {
 
   implicit class IntArrayToNumerics(a: Array[Int]) {
     def toNumeric128: Numeric128 = (a(0), a(1), a(2), a(3))
+    def toNumeric192: Numeric192 = (a(0), a(1), a(2), a(3), a(4), a(5))
     def toNumeric256: Numeric256 = (a(0), a(1), a(2), a(3), a(4), a(5), a(6), a(7))
     def concatChars: Int = a(0) << 16 | a(1)
   }

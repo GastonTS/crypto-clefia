@@ -23,7 +23,13 @@ object Clefia {
     case (k0: Int, k1: Int, k2: Int, k3: Int) => (KeyScheduling.scheduleKeys((k0, k1, k2, k3)), 18)
     case (k0: Int, k1: Int, k2: Int, k3: Int, k4: Int, k5: Int) => (KeyScheduling.scheduleKeys((k0, k1, k2, k3, k4, k5)), 22)
     case (k0: Int, k1: Int, k2: Int, k3: Int, k4: Int, k5: Int, k6: Int, k7: Int) => (KeyScheduling.scheduleKeys((k0, k1, k2, k3, k4, k5, k6, k7)), 26)
-    case _ => throw new InvalidKeyException("Invalid Key")
+    case k: String => k.length match {
+      case 16 => getKeys(k.toNumeric128)
+      case 24 => getKeys(k.toNumeric192)
+      case 32 => getKeys(k.toNumeric256)
+      case l => throw new InvalidKeyException(s"Invalid Key $l is not a valid length fot a string key, only 16, 24 and 32 string length are supported")
+    }
+    case _ => throw new InvalidKeyException("Invalid Key, only 128, 192 and 256 bits keys are supported")
   }
 
   def getBlocks(a: Array[Byte]): GenSeq[Numeric128] =
