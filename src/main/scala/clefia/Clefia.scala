@@ -5,7 +5,6 @@ import java.nio.file.{Files, Paths}
 
 import clefia.Numeric._
 
-import scala.annotation.tailrec
 import scala.collection.GenSeq
 import scala.collection.parallel.mutable.ParArray
 
@@ -15,8 +14,8 @@ import scala.collection.parallel.mutable.ParArray
 class InvalidKeyException(message: String ) extends RuntimeException
 
 object Clefia {
-  var parallel = true
-  def setParallel(par: Boolean) = parallel = par
+  var chained = false
+  def setChained(isChained: Boolean) = chained = isChained
   def printDuration(timestamp: Long) = println(f"Duration: ${(System.nanoTime - timestamp) * 0.000000001}s")
 
   def getKeys[T](key: T): (Keys, Int) = key match  {
@@ -39,7 +38,7 @@ object Clefia {
     blocks.flatMap { b => ByteBuffer.allocate(16).putInt(b._1).putInt(b._2).putInt(b._3).putInt(b._4)array() }.toArray
 
   def process[T](blocks: GenSeq[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128 ): GenSeq[Numeric128] =
-    if(parallel) parProcess(blocks.toParArray, key, f) else chainProcess(blocks.toArray, key, f)
+    if(chained) chainProcess(blocks.toArray, key, f) else parProcess(blocks.toParArray, key, f)
 
   def chainProcess[T](blocks: Array[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128 ): GenSeq[Numeric128] = {
     def singleProcess(numberBlock: Int, keys: Keys, rounds: Int, acc: Vector[Numeric128]): Vector[Numeric128] = {
