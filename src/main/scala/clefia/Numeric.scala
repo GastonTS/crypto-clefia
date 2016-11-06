@@ -69,7 +69,7 @@ object Numeric {
     def ^(other: Numeric128): Numeric128 = (num._1 ^ other._1, num._2 ^ other._2, num._3 ^ other._3, num._4 ^ other._4)
     def toArray: Array[Int] = Array(num._1, num._2, num._3 ,num._4)
     def toRealString: String = num.toArray.flatMap(_.getChars).mkString
-    def concat(other: Numeric128) = (num._1, num._2, num._3 ,num._4, other._1, other._2, other._3 , other._4)
+    def concat(other: Numeric128): Numeric256 = (num._1, num._2, num._3 ,num._4, other._1, other._2, other._3 , other._4)
   }
 
   implicit class Numeric256Ops(num: Numeric256) {
