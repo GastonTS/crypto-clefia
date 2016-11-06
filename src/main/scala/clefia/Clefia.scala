@@ -6,7 +6,6 @@ import java.nio.file.{Files, Paths}
 import clefia.Numeric._
 
 import scala.collection.GenSeq
-import scala.collection.parallel.mutable.ParArray
 
 /**
   * Created by gastonsantoalla on 31/10/16.
@@ -106,12 +105,13 @@ object Clefia extends Clefia {
   def decrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks, key, DataProcessing.dec)
 }
 object ChainedClefia extends Clefia {
-  def process[T](blocks: GenSeq[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128, encrypting: Boolean): GenSeq[Numeric128] = {
+  def process[T](blocks: Array[Numeric128], key: T, encrypt: Boolean): GenSeq[Numeric128] = {
+    val f: (Numeric128, Keys, Int) => Numeric128 = if(encrypt) DataProcessing.enc else DataProcessing.dec
     def singleProcess(numberBlock: Int, keys: Keys, rounds: Int, acc: Vector[Numeric128]): Vector[Numeric128] = {
       if (numberBlock == blocks.length) acc
       else {
         val processedElement = f(blocks(numberBlock), keys, rounds)
-        val newKey = if(encrypting) processedElement else blocks(numberBlock)
+        val newKey = if(encrypt) processedElement else blocks(numberBlock)
         val (sKeys, nRounds) = getKeys(newKey)
         singleProcess(numberBlock + 1, sKeys, nRounds, acc :+ processedElement)
       }
@@ -121,7 +121,7 @@ object ChainedClefia extends Clefia {
     singleProcess(0, keys, rounds, Vector())
   }
 
-  def encrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks, key, DataProcessing.enc, true)
-  def decrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks, key, DataProcessing.dec, false)
+  def encrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks.toArray, key, true)
+  def decrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks.toArray, key, false)
 }
 
