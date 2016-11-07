@@ -13,8 +13,8 @@ class ClefiaParallelSpec extends FreeSpec with Matchers {
 
     "should solve 128-bit key with more than one block" - {
       val key = (0xffeeddcc, 0xbbaa9988, 0x77665544, 0x33221100)
-      val plainText = List((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
-      val cipherText = List((-567545091, -1686852915, -248937131, 1167365373), (-1411681916, 1121179255, -638568068, -1930591881))
+      val plainText = Array((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
+      val cipherText = Array((-567545091, -1686852915, -248937131, 1167365373), (-1411681916, 1121179255, -638568068, -1930591881))
 
       "should encrypt" in {
         Clefia.encrypt(plainText, key) should be (cipherText)
@@ -31,8 +31,8 @@ class ClefiaParallelSpec extends FreeSpec with Matchers {
 
     "should solve 192-bit key with more than one block" - {
       val key = (0xffeeddcc, 0xbbaa9988, 0x77665544, 0x33221100, 0xf0e0d0c0, 0xb0a09080)
-      val plainText = List((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
-      val cipherText = List((-498585756, -1627222588, -2132958844, -35552851), (148402139, -156386572, 1173495889, 350561144))
+      val plainText = Array((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
+      val cipherText = Array((-498585756, -1627222588, -2132958844, -35552851), (148402139, -156386572, 1173495889, 350561144))
 
       "should encrypt" in {
         Clefia.encrypt(plainText, key) should be (cipherText)
@@ -49,8 +49,8 @@ class ClefiaParallelSpec extends FreeSpec with Matchers {
 
     "should solve 256-bit key with more than one block" - {
       val key = (0xffeeddcc, 0xbbaa9988, 0x77665544, 0x33221100, 0xf0e0d0c0, 0xb0a09080, 0x70605040, 0x30201000)
-      val plainText = List((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
-      val cipherText = List((-1590069228, 681437196, 282740433, -95898742), (-177668879, -1216871642, 1130699143, 1510722439))
+      val plainText = Array((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
+      val cipherText = Array((-1590069228, 681437196, 282740433, -95898742), (-177668879, -1216871642, 1130699143, 1510722439))
 
       "should encrypt" in {
         Clefia.encrypt(plainText, key) should be (cipherText)
@@ -68,8 +68,8 @@ class ClefiaParallelSpec extends FreeSpec with Matchers {
 
     "should handle 128-bit string key with more than one block" - {
       val key = "Sarlomp vacation"
-      val plainText = List((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
-      val cipherText = List((-608618860, -1029326990, 1355833740, -554241697), (-2080514872, 489396424, 417304930, -1699638046))
+      val plainText = Array((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
+      val cipherText = Array((-608618860, -1029326990, 1355833740, -554241697), (-2080514872, 489396424, 417304930, -1699638046))
 
       "should encrypt" in {
         Clefia.encrypt(plainText, key) should be (cipherText)
@@ -86,8 +86,8 @@ class ClefiaParallelSpec extends FreeSpec with Matchers {
 
     "should handle 192-bit string key with more than one block" - {
       val key = "Mr.Sarlomp is a good man"
-      val plainText = List((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
-      val cipherText = List((-984243964, -45562810, -659253345, 1611139987), (208910872, -529051789, -784316288, 1460340374))
+      val plainText = Array((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
+      val cipherText = Array((-984243964, -45562810, -659253345, 1611139987), (208910872, -529051789, -784316288, 1460340374))
 
       "should encrypt" in {
         Clefia.encrypt(plainText, key) should be (cipherText)
@@ -104,8 +104,8 @@ class ClefiaParallelSpec extends FreeSpec with Matchers {
 
     "should handle 256-bit string key with more than one block" - {
       val key = "Mr.Sarlomp wish you were here :c"
-      val plainText = List((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
-      val cipherText = List((630845392, 497378928, -894724412, -1220841694), (-1512096666, -1703054826, -1409704002, 1278716346))
+      val plainText = Array((0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f), (0xa1397814, 0x289de80c, 0x10da46d1, 0xfa48b38a))
+      val cipherText = Array((630845392, 497378928, -894724412, -1220841694), (-1512096666, -1703054826, -1409704002, 1278716346))
 
       "should encrypt" in {
         Clefia.encrypt(plainText, key) should be (cipherText)

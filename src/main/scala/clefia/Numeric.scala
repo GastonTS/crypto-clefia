@@ -46,7 +46,7 @@ object Numeric {
     def toNumeric128: Numeric128 = s.toIntArray.toNumeric128
     def toNumeric192: Numeric192 = s.toIntArray.toNumeric192
     def toNumeric256: Numeric256 = s.toIntArray.toNumeric256
-    def toNumeric128Blocks: List[Numeric128] = s.grouped(8).map(_.toNumeric128).toList
+    def toNumeric128Blocks: Array[Numeric128] = s.grouped(8).map(_.toNumeric128).toArray
   }
 
   implicit class ShortArrayToNumerics(a: Array[Short]) {

@@ -5,8 +5,6 @@ import java.nio.file.{Files, Paths}
 
 import clefia.Numeric._
 
-import scala.collection.GenSeq
-
 /**
   * Created by gastonsantoalla on 31/10/16.
   */
@@ -28,13 +26,13 @@ trait Clefia {
     case _ => throw new InvalidKeyException("Invalid Key, only 128, 192 and 256 bits keys are supported")
   }
 
-  def getBlocks(a: Array[Byte]): GenSeq[Numeric128] =
-    a.grouped(4).map(b => ByteBuffer.wrap(Array[Byte](b(0), b(1), b(2), b(3))).getInt).grouped(4).map(_.toArray.toNumeric128).toSeq
+  def getBlocks(a: Array[Byte]): Array[Numeric128] =
+    a.grouped(4).map(b => ByteBuffer.wrap(Array[Byte](b(0), b(1), b(2), b(3))).getInt).grouped(4).map(_.toArray.toNumeric128).toArray
 
-  def getByteArray(blocks: GenSeq[Numeric128]): Array[Byte] =
-    blocks.flatMap { b => ByteBuffer.allocate(16).putInt(b._1).putInt(b._2).putInt(b._3).putInt(b._4)array() }.toArray
+  def getByteArray(blocks: Array[Numeric128]): Array[Byte] =
+    blocks.flatMap { b => ByteBuffer.allocate(16).putInt(b._1).putInt(b._2).putInt(b._3).putInt(b._4)array() }
 
-  def processText[T](text: String, key: T, f: (GenSeq[Numeric128], T) => GenSeq[Numeric128]): String =
+  def processText[T](text: String, key: T, f: (Array[Numeric128], T) => Array[Numeric128]): String =
     f(text.toNumeric128Blocks, key).map(_.toRealString).mkString
 
   def processFile[T](originPath: String, destinationPath: String, key: T, operation: String, f: (Array[Byte], T) => Array[Byte]) = {
@@ -55,11 +53,11 @@ trait Clefia {
     finalPath.toString
   }
 
-  def encrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128]
-  def decrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128]
+  def encrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128]
+  def decrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128]
 
-  def encryptBlock[T](block: Numeric128, key: T): Numeric128 = encrypt(List(block), key).head
-  def decryptBlock[T](block: Numeric128, key: T): Numeric128 = decrypt(List(block), key).head
+  def encryptBlock[T](block: Numeric128, key: T): Numeric128 = encrypt(Array(block), key).head
+  def decryptBlock[T](block: Numeric128, key: T): Numeric128 = decrypt(Array(block), key).head
 
   def encryptText[T](plaintText: String, key: T): String = {
     val timestamp = System.nanoTime
@@ -96,16 +94,16 @@ trait Clefia {
 }
 
 object Clefia extends Clefia {
-  def process[T](blocks: GenSeq[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128 ): GenSeq[Numeric128] = {
+  def process[T](blocks: Array[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128 ): Array[Numeric128] = {
     val (keys, rounds) = getKeys(key)
-    blocks.toParArray.map(f(_, keys, rounds))
+    blocks.par.map(f(_, keys, rounds)).toArray
   }
 
-  def encrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks, key, DataProcessing.enc)
-  def decrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks, key, DataProcessing.dec)
+  def encrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128] = process(blocks, key, DataProcessing.enc)
+  def decrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128] = process(blocks, key, DataProcessing.dec)
 }
 object ChainedClefia extends Clefia {
-  def process[T](blocks: Array[Numeric128], key: T, encrypt: Boolean): GenSeq[Numeric128] = {
+  def process[T](blocks: Array[Numeric128], key: T, encrypt: Boolean): Array[Numeric128] = {
     val f: (Numeric128, Keys, Int) => Numeric128 = if(encrypt) DataProcessing.enc else DataProcessing.dec
     def singleProcess(numberBlock: Int, keys: Keys, rounds: Int, acc: Vector[Numeric128]): Vector[Numeric128] = {
       if (numberBlock == blocks.length) acc
@@ -118,10 +116,10 @@ object ChainedClefia extends Clefia {
     }
 
     val (keys, rounds) = getKeys(key)
-    singleProcess(0, keys, rounds, Vector())
+    singleProcess(0, keys, rounds, Vector()).toArray
   }
 
-  def encrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks.toArray, key, true)
-  def decrypt[T](blocks: GenSeq[Numeric128], key: T): GenSeq[Numeric128] = process(blocks.toArray, key, false)
+  def encrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128] = process(blocks, key, encrypt = true)
+  def decrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128] = process(blocks, key, encrypt = false)
 }
 

@@ -59,7 +59,7 @@ class NumericSpec extends FreeSpec with Matchers {
       }
 
       "into Numerci128 blocks" in {
-        "Sarlomp!".toNumeric128Blocks should be (List((5439585,7471212,7274605,7340065)))
+        "Sarlomp!".toNumeric128Blocks should be (Array((5439585,7471212,7274605,7340065)))
       }
     }
 
