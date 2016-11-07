@@ -11,6 +11,7 @@ import clefia.Numeric._
 class InvalidKeyException(message: String ) extends RuntimeException
 
 trait Clefia {
+  
   def printDuration(timestamp: Long) = println(f"Duration: ${(System.nanoTime - timestamp) * 0.000000001}s")
 
   def getKeys[T](key: T): (Keys, Int) = key match  {
@@ -31,6 +32,8 @@ trait Clefia {
 
   def getByteArray(blocks: Array[Numeric128]): Array[Byte] =
     blocks.flatMap { b => ByteBuffer.allocate(16).putInt(b._1).putInt(b._2).putInt(b._3).putInt(b._4)array() }
+
+  def process[T](blocks: Array[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128): Array[Numeric128]
 
   def processText[T](text: String, key: T, f: (Array[Numeric128], T) => Array[Numeric128]): String =
     f(text.toNumeric128Blocks, key).map(_.toRealString).mkString
@@ -53,8 +56,8 @@ trait Clefia {
     finalPath.toString
   }
 
-  def encrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128]
-  def decrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128]
+  def encrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128] = process(blocks, key, DataProcessing.enc)
+  def decrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128] = process(blocks, key, DataProcessing.dec)
 
   def encryptBlock[T](block: Numeric128, key: T): Numeric128 = encrypt(Array(block), key).head
   def decryptBlock[T](block: Numeric128, key: T): Numeric128 = decrypt(Array(block), key).head
@@ -100,22 +103,17 @@ object Clefia extends Clefia {
     println("Keys Generated")
     blocks.par.map(f(_, keys, rounds)).toArray
   }
-
-  def encrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128] = process(blocks, key, DataProcessing.enc)
-  def decrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128] = process(blocks, key, DataProcessing.dec)
 }
 object ChainedClefia extends Clefia {
-  def process[T](blocks: Array[Numeric128], key: T, encrypt: Boolean): Array[Numeric128] = {
+  def process[T](blocks: Array[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128): Array[Numeric128] = {
     println("Begin Chained Encryption")
-    val f: (Numeric128, Keys, Int) => Numeric128 = if(encrypt) DataProcessing.enc else DataProcessing.dec
     val blocksLength = blocks.length
     def singleProcess(numberBlock: Int, keys: Keys, rounds: Int, acc: Vector[Numeric128]): Vector[Numeric128] = {
       if (numberBlock == blocksLength) acc
       else {
         val processedElement = f(blocks(numberBlock), keys, rounds)
         print(s"Processed Blocks: $numberBlock/$blocksLength (${(numberBlock.toFloat /blocksLength*100).toInt}%)\r")
-        val newKey = if(encrypt) processedElement else blocks(numberBlock)
-        val (sKeys, nRounds) = getKeys(newKey)
+        val (sKeys, nRounds) = getKeys(processedElement ^ blocks(numberBlock))
         singleProcess(numberBlock + 1, sKeys, nRounds, acc :+ processedElement)
       }
     }
@@ -123,8 +121,5 @@ object ChainedClefia extends Clefia {
     val (keys, rounds) = getKeys(key)
     singleProcess(0, keys, rounds, Vector()).toArray
   }
-
-  def encrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128] = process(blocks, key, encrypt = true)
-  def decrypt[T](blocks: Array[Numeric128], key: T): Array[Numeric128] = process(blocks, key, encrypt = false)
 }
 
