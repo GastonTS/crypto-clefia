@@ -95,7 +95,9 @@ trait Clefia {
 
 object Clefia extends Clefia {
   def process[T](blocks: Array[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128 ): Array[Numeric128] = {
+    println("Begin Parallel Encryption")
     val (keys, rounds) = getKeys(key)
+    println("Keys Generated")
     blocks.par.map(f(_, keys, rounds)).toArray
   }
 
@@ -104,11 +106,14 @@ object Clefia extends Clefia {
 }
 object ChainedClefia extends Clefia {
   def process[T](blocks: Array[Numeric128], key: T, encrypt: Boolean): Array[Numeric128] = {
+    println("Begin Chained Encryption")
     val f: (Numeric128, Keys, Int) => Numeric128 = if(encrypt) DataProcessing.enc else DataProcessing.dec
+    val blocksLength = blocks.length
     def singleProcess(numberBlock: Int, keys: Keys, rounds: Int, acc: Vector[Numeric128]): Vector[Numeric128] = {
-      if (numberBlock == blocks.length) acc
+      if (numberBlock == blocksLength) acc
       else {
         val processedElement = f(blocks(numberBlock), keys, rounds)
+        print(s"Processed Blocks: $numberBlock/$blocksLength (${(numberBlock.toFloat /blocksLength*100).toInt}%)\r")
         val newKey = if(encrypt) processedElement else blocks(numberBlock)
         val (sKeys, nRounds) = getKeys(newKey)
         singleProcess(numberBlock + 1, sKeys, nRounds, acc :+ processedElement)
