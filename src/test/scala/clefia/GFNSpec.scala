@@ -38,11 +38,11 @@ class GFNSpec extends FreeSpec with Matchers {
       "using gfn8 with 6 rounds" in {
         val input = (0x417112de, 0x2d5090f6, 0xcca9096f, 0xa088487b, 0x8a4584b7, 0xe664a43d, 0xa933c25b, 0xc512d21e)
         val keys = Array(0x524234b8, 0x3e63a3e5, 0x1128b26c, 0x7d09c9a6,
-                        0x309df106, 0x5cbc7c87, 0xf45f7883, 0x987ebe43,
-                        0x963ebc41, 0xfa1fdf21, 0x73167610, 0x1f37f7c4,
-                        0x01829338, 0x6da363b6, 0x38c8e1ac, 0x54e9298f,
-                        0x246dd8e6, 0x484c8c93, 0xfe276c73, 0x9206c649,
-                        0x9302b639, 0xff23e324, 0x7188732c, 0x1da969c6)
+                         0x309df106, 0x5cbc7c87, 0xf45f7883, 0x987ebe43,
+                         0x963ebc41, 0xfa1fdf21, 0x73167610, 0x1f37f7c4,
+                         0x01829338, 0x6da363b6, 0x38c8e1ac, 0x54e9298f,
+                         0x246dd8e6, 0x484c8c93, 0xfe276c73, 0x9206c649,
+                         0x9302b639, 0xff23e324, 0x7188732c, 0x1da969c6)
 
         GFN.gfn8H(input, keys, 6) should be ((-288320195, -400551447, -1619238495, 1500553729, 516395372, 1502064311, 1307738312, -1111021205))
         GFN.gfn8(input, keys, 6) should be ((-288320195, -400551447, -1619238495, 1500553729, 516395372, 1502064311, 1307738312, -1111021205))

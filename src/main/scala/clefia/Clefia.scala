@@ -11,7 +11,7 @@ import clefia.Numeric._
 class InvalidKeyException(message: String ) extends RuntimeException
 
 trait Clefia {
-  
+
   def printDuration(timestamp: Long) = println(f"Duration: ${(System.nanoTime - timestamp) * 0.000000001}s")
 
   def getKeys[T](key: T): (Keys, Int) = key match  {
@@ -104,6 +104,7 @@ object Clefia extends Clefia {
     blocks.par.map(f(_, keys, rounds)).toArray
   }
 }
+
 object ChainedClefia extends Clefia {
   def process[T](blocks: Array[Numeric128], key: T, f: (Numeric128, Keys, Int) => Numeric128): Array[Numeric128] = {
     println("Begin Chained Encryption")
@@ -119,7 +120,9 @@ object ChainedClefia extends Clefia {
     }
 
     val (keys, rounds) = getKeys(key)
-    singleProcess(0, keys, rounds, Vector()).toArray
+    val result = singleProcess(0, keys, rounds, Vector()).toArray
+    println(s"Processed Blocks: $blocksLength/$blocksLength (100%)")
+    result
   }
 }
 

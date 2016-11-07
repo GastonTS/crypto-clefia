@@ -22,5 +22,4 @@ object DataProcessing {
     val (t0, t1, t2, t3) = GFN.gfn4Inverse((c0, c1 ^ wk2, c2, c3 ^ wk3), keys.roundKeys, rounds)
     (t0, t1 ^ wk0, t2, t3 ^ wk1)
   }
-
 }

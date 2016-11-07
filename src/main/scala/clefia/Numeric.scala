@@ -4,6 +4,7 @@ package clefia
   */
 
 object Numeric {
+
   type Numeric32 = (Short, Short, Short, Short)
   type Numeric128 = (Int, Int, Int, Int)
   type Numeric192 = (Int, Int, Int, Int, Int, Int)
@@ -77,5 +78,4 @@ object Numeric {
     def first128: Numeric128 =  (num._1, num._2, num._3 ,num._4)
     def last128: Numeric128 =  (num._5, num._6, num._7, num._8)
   }
-
 }
