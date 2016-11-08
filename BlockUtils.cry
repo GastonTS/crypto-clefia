@@ -1,0 +1,18 @@
+module BlockUtils where
+
+type Block = [128]
+type IntermediateValue = [32]
+type Piece a = [a / 4]
+type Pieces a = [4](Piece a)
+
+toPieces : {a, b} (fin a) => [4 * a]b -> [4][a]b
+toPieces = split`{parts=4}
+
+fromPieces : {a, b} (fin a) => [4][a]b -> [4 * a]b
+fromPieces = join`{parts=4}
+
+applyAsBlock : {a, b, c, d} (fin a, fin c) => ([4 * c]d -> [4 * a]b) -> [4][c]d -> [4][a]b
+applyAsBlock f x =  toPieces (f (fromPieces x))
+
+transposeVector : {a, b} [a]b -> [a][1]b
+transposeVector vector = transpose [vector] 

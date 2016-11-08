@@ -1,0 +1,25 @@
+module HighOrderUtils where
+
+scan : {n, a, b} (a -> b -> b) -> b -> [n]a -> [n+1]b
+scan f seed xs = [seed] # [ f x y | x <- xs | y <- scan f seed xs ]
+
+fold : {n,a,b} (fin n) => (a -> b -> b) -> b -> [n]a -> b
+fold f seed xs = last (scan f seed xs)
+
+iterate : {a} (a -> a) -> a -> [inf] a
+iterate f seed = infinitely (scan (\_ y -> f y) seed)
+
+infinitely : {a} ([inf][0] -> a) -> a
+infinitely f = f [0 ... ]
+
+map : {a, b, n} (a -> b) -> [n]a -> [n]b
+map f xs = [f x | x <- xs]
+
+last: {n, a} (fin n) => [n]a -> a 
+last xs = xs ! 0
+
+c:{a, b, c} (a -> b) -> (c -> a) -> c -> b
+c f g x = f (g x)
+
+cycle : {a, b} (fin a) => [a]b -> [inf]b
+cycle x = x # cycle x

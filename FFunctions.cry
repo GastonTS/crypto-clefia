@@ -1,0 +1,28 @@
+module FFunctions where
+import BlockUtils
+import GaloisField28
+import ClefiaConstants
+
+M:[1] -> [4][4][8]
+M n = [M0, M1] @ n
+
+SBoxesFor:[1] -> [4][256][8]
+SBoxesFor n = [S0, S1, S0, S1] <<< n
+
+type FFunction = IntermediateValue -> IntermediateValue -> IntermediateValue
+
+F0 : FFunction
+F0 = F 0
+
+F1 : FFunction
+F1 = F 1
+
+F : [1] -> FFunction
+F n roundingKey roundInput = Y
+	where T = roundingKey ^ roundInput
+	      [T0, T1, T2, T3] = toPieces T
+	      TS = [Si @ Ti | Ti <- [T0, T1, T2, T3]
+	                    | Si <- SBoxesFor n]
+	      [Y0, Y1, Y2, Y3] = gf28VectorMult TS (M n)
+	      Y = fromPieces [Y0, Y1, Y2, Y3]
+

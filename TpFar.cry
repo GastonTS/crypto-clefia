@@ -1,0 +1,140 @@
+import ClefiaConstants
+import HighOrderUtils
+import FFunctions
+import BlockUtils
+
+GFN4 = GFN`{d=4}
+
+GFN4Inv:{r} (fin r) => GFN 4 r
+GFN4Inv = GFNInv`{d=4}
+
+type GFN d r = [d * r / 2]IntermediateValue -> [d]IntermediateValue -> [d]IntermediateValue
+
+GFNInv : {d, r} (fin r, fin d, d == 2 * (d / 2), r * (d / 2) == r * d / 2, 8 >= width (d/2)) => GFN d r
+GFNInv roundingKeys = GeneralGFN (>>>) (reverse [ rkeys | rkeys <- groupBy`{each=(d / 2), parts=r} roundingKeys])
+
+GFN : {d, r} (fin r, fin d, d == 2 * (d / 2), r * (d / 2) == r * d / 2, 8 >= width (d/2)) => GFN d r
+GFN roundingKeys = GeneralGFN (<<<) [ rkeys | rkeys <- groupBy`{each=(d / 2), parts=r} roundingKeys]
+
+GeneralGFN : {a, b, c} (c >= 2, fin a, fin b, fin c, c >= width b) => ([2*b][32] -> [c] -> [2*b][32]) -> [a][b][32] -> [2*b][32] -> [2*b][32]
+GeneralGFN shift groupedRoundingKeys x = shift y (`b * 2 - 1)
+	where y = fold (GFNround (\ys -> shift ys 1)) x groupedRoundingKeys
+
+GFNround: {d} (fin d) => ([d*2][32] -> [d*2][32]) -> [d][32] -> [d*2][32] -> [d*2][32]
+GFNround shift rkeys x = shift Y
+	where Y = join [[Ti, Tj ^ (f rk Ti)] | [Ti, Tj] <- groupBy`{2} x
+							   	       	 | f <- cycle [F0, F1]
+						   				 | rk <- rkeys ]
+
+type Encryption r = [4]IntermediateValue -> [2 * r]IntermediateValue -> Block -> Block
+
+ENCgeneral: {r} (fin r) => GFN 4 r -> Encryption r
+ENCgeneral GFNfunction [WKA, WKB, WKC, WKD] roundKeys text = join C
+	where [P0, P1, P2, P3] = toPieces text
+	      T = [P0, P1 ^ WKA, P2, P3 ^ WKB]
+	      [T0, T1, T2, T3] = GFNfunction roundKeys T
+	      C = [T0, T1 ^ WKC, T2, T3 ^ WKD]
+
+ENC = ENCgeneral GFN
+
+DEC [WK0, WK1, WK2, WK3] = ENCgeneral GFNInv [WK2, WK3, WK0, WK1]
+
+encrypt128 PlainText Key = cypherText
+	where cypherText = ENC Wkeys Rkeys PlainText
+	      (Wkeys, Rkeys) = keyScheduling128 (groupBy`{32} Key) constants128
+
+decrypt128 CyptherText Key = plainText
+	where plainText = DEC Wkeys Rkeys CyptherText
+	      (Wkeys, Rkeys) = keyScheduling128 (groupBy`{32} Key) constants128
+
+encrypt = encryption ENC
+
+decrypt = encryption DEC
+
+encryption CodingFunction Input (Key:[KeySize]) = Output
+	where Output = CodingFunction Wkeys Rkeys Input
+	      (Wkeys, Rkeys) = keyScheduling (groupBy`{32} Key) (take`{60+KeySize/8} CONS)
+	      CONS = if (`KeySize == 192) then (constants192 # zero) else constants256
+
+doubleSwap: Block -> Block
+doubleSwap X = X @@ ([7 .. 63]:[57][8]) # X @@ ([121 .. 127]:[7][8]) # X @@ ([0 .. 6]:[7][8]) # X @@ ([64 .. 120]:[57][8])
+
+Σ = applyAsBlock doubleSwap
+
+keyScheduling128 : {r} [4][32] -> [24 + 4 * r]IntermediateValue -> ([4]IntermediateValue, [4 * r]IntermediateValue)
+keyScheduling128 Key CONS = ([WK0, WK1, WK2, WK3], RoundingKeys)
+	where L = GFN4 (take`{24} CONS) Key
+	      [WK0, WK1, WK2, WK3] = Key
+	      RoundingKeys = generateRoundingKeys128 Key L (drop`{24} CONS)
+
+generateRoundingKeys128 : {r} [4]IntermediateValue -> [4]IntermediateValue -> [4 * r]IntermediateValue -> [4 * r]IntermediateValue
+generateRoundingKeys128 Key L CONS = join [generateRoundingKeySet Key l constants n | constants <- split`{each=4} CONS
+											   							 	     | l <- iterate Σ L
+													 					 	     | n <- [0,1...]:[inf][8]]
+
+keyScheduling Key CONS = ([WK0, WK1, WK2, WK3], RoundingKeys)
+	where [K0, K1, K2, K3, K4, K5, K6, K7] = take`{8} (Key # (~Key))
+	      KL = [K0, K1, K2, K3]
+	      KR = [K4, K5, K6, K7]
+	      [LL, LR] = split`{2} (GFN`{8, 10} (take`{40} CONS) (KL # KR))
+	      [WK0, WK1, WK2, WK3] = KL ^ KR
+	      RoundingKeys = generateRoundingKeys KL KR LL LR (drop`{40} CONS)
+
+generateRoundingKeys KL KR LL LR (CONS:[a][32]) = join (tail [ RKs | (RKs, _) <- scan step (zero, (LL, LR)) (take`{a/4} [0,1 ...])])
+ 	where step i (RKs,(ll,lr)) = if i % 4 == 0 || i % 4 == 1 then (generateRoundingKeySet KR ll (constants @ i) i, (Σ ll,lr))
+ 					    	 	 else (generateRoundingKeySet KL lr (constants @ i) i, (ll,Σ lr))
+ 	      constants = split`{each=4} CONS
+
+generateRoundingKeySet : {b, c} (fin b) => [4][b]c -> [4][b]c -> [4][b]c -> [8] -> [4][b]c
+generateRoundingKeySet K L CONS n = RoundingKeySet
+	where L' = if (n % 2 == 0) then L else L ^ K
+              RoundingKeySet = L' ^ CONS
+
+property vectorMatches256 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches2561 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches2562 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches2563 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches2564 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches2565 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches2566 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches2567 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches2568 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches2569 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches2560 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches25611 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a090807060504030201000 == 0xa1397814289de80c10da46d1fa48b38a
+property vectorMatches192 = encrypt 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100f0e0d0c0b0a09080 == 0xe2482f649f028dc480dda184fde181ad
+property vectorMatches128 = encrypt128 0x000102030405060708090a0b0c0d0e0f 0xffeeddccbbaa99887766554433221100 == 0xde2bf2fd9b74aacdf1298555459494fd
+property algorythmIsReversible1929 (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible2568 (plainText:[128]) (key:[256]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible1926 (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible1922 (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible2563 (plainText:[128]) (key:[256]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible128 (plainText:[128]) (key:[128]) = decrypt128 (encrypt128 plainText key) key == plainText
+property algorythmIsReversible1924 (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible25612 (plainText:[128]) (key:[256]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible128 (plainText:[128]) (key:[128]) = decrypt128 (encrypt128 plainText key) key == plainText
+property algorythmIsReversible19211 (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible25613 (plainText:[128]) (key:[256]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible128 (plainText:[128]) (key:[128]) = decrypt128 (encrypt128 plainText key) key == plainText
+property algorythmIsReversible19214 (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible256165 (plainText:[128]) (key:[256]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible128 (plainText:[128]) (key:[128]) = decrypt128 (encrypt128 plainText key) key == plainText
+property algorythmIsReversible19216 (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible256177 (plainText:[128]) (key:[256]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible128 (plainText:[128]) (key:[128]) = decrypt128 (encrypt128 plainText key) key == plainText
+property algorythmIsReversible19218 (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible25619 (plainText:[128]) (key:[256]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible128 (plainText:[128]) (key:[128]) = decrypt128 (encrypt128 plainText key) key == plainText
+property algorythmIsReversible19220 (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible25612212 (plainText:[128]) (key:[256]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible128 (plainText:[128]) (key:[128]) = decrypt128 (encrypt128 plainText key) key == plainText
+property algorythmIsReversible19213513 (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible256asdfa (plainText:[128]) (key:[256]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible128 (plainText:[128]) (key:[128]) = decrypt128 (encrypt128 plainText key) key == plainText
+property algorythmIsReversible192fasd (plainText:[128]) (key:[192]) = decrypt (encrypt plainText key) key == plainText
+property algorythmIsReversible256afsda (plainText:[128]) (key:[256]) = decrypt (encrypt plainText key) key == plainText
+
+encryptSeveral blocks key = join [encrypt (block # zero:[128]) key | block <- blocks]
+
+encryptBig (block:[BlockSize]) = encryptSeveral (groupBy`{128} (block # padding))
+	where padding = zero:[128-(BlockSize % 128)]

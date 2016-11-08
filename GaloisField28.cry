@@ -1,0 +1,21 @@
+module GaloisField28 where
+type GF28 = [8]
+
+gf28Add : {n} (fin n) => [n]GF28 -> GF28
+gf28Add ps = sums ! 0
+	where sums = [zero] # [ p ^ s | p <- ps | s <- sums ]
+
+irreducible = <| x^^8 + x^^4 + x^^3 + x^^2 + 1 |>
+
+gf28Mult : GF28 -> GF28 -> GF28
+gf28Mult x y = pmod (pmult x y) irreducible
+
+gf28DotProduct : {n} (fin n) => [n]GF28 -> [n]GF28 -> GF28
+gf28DotProduct xs ys = gf28Add [ gf28Mult x y | x <- xs | y <- ys ]
+
+gf28VectorMult : {n, m} (fin n) => [n]GF28 -> [m][n]GF28 -> [m]GF28
+gf28VectorMult v ms = [ gf28DotProduct v m | m <- ms ]
+
+gf28MatrixMult : {n, m, k} (fin m) => [n][m]GF28 -> [m][k]GF28 -> [n][k]GF28
+gf28MatrixMult xss yss = [ gf28VectorMult xs yss' | xs <- xss ]
+	where yss' = transpose yss
